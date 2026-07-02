@@ -49,10 +49,13 @@ import {
   Clock,
   TrendingDown,
   Calendar,
+  Scale,
 } from "lucide-react";
 import PayrollCalculator from "@/components/payroll/payroll-calculator";
 import PayStubView from "@/components/payroll/pay-stub-view";
 import ScenariosSection from "@/components/payroll/scenarios-section";
+import TaxationSection from "@/components/payroll/taxation-section";
+import GlossarySection from "@/components/payroll/glossary-section";
 import {
   BarChart,
   Bar,
@@ -160,19 +163,22 @@ export default function HomePage() {
   const tabs = [
     { id: "fundamentals", label: "Fundamentals", icon: BookOpen },
     { id: "federal", label: "Federal Tax", icon: Landmark },
+    { id: "taxation", label: "Taxation", icon: Scale },
     { id: "fica", label: "FICA", icon: Shield },
     { id: "state", label: "State Tax", icon: MapPin },
     { id: "calculator", label: "Calculator", icon: Calculator },
     { id: "paystub", label: "Pay Stub", icon: Receipt },
     { id: "scenarios", label: "Scenarios", icon: Users },
+    { id: "glossary", label: "Glossary", icon: BookOpen },
     { id: "forms", label: "Forms", icon: FileText },
   ];
 
   return (
     <div className="min-h-screen flex flex-col">
       {/* Hero */}
-      <header className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-800 text-white">
-        <div className="max-w-6xl mx-auto px-4 py-12 sm:py-16">
+      <header className="relative bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-800 text-white overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(255,255,255,0.08),transparent_50%)]" />
+        <div className="max-w-6xl mx-auto px-4 py-12 sm:py-16 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -186,14 +192,15 @@ export default function HomePage() {
                 2024 Tax Year
               </Badge>
             </div>
-            <h1 className="text-3xl sm:text-5xl font-bold tracking-tight mb-4">
+            <h1 className="text-3xl sm:text-5xl font-bold tracking-tight mb-3">
               Master USA Payroll
+              <span className="block text-emerald-200 text-2xl sm:text-3xl font-normal mt-1">& Taxation</span>
             </h1>
-            <p className="text-lg sm:text-xl text-emerald-100 max-w-2xl mb-6">
-              A comprehensive, interactive guide to understanding American payroll — from gross pay to net
-              pay, with real-world examples, calculators, and visual breakdowns.
+            <p className="text-base sm:text-lg text-emerald-100 max-w-2xl mb-6">
+              A comprehensive, interactive guide to understanding American payroll and taxes — from gross pay to net pay, 
+              capital gains to tax credits, with real-world examples, calculators, and visual breakdowns.
             </p>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-2 sm:gap-3 mb-8">
               <Badge className="bg-white/20 text-white border-0 py-1.5 px-3">
                 <DollarSign className="mr-1.5 h-3.5 w-3.5" /> Tax Brackets
               </Badge>
@@ -204,8 +211,33 @@ export default function HomePage() {
                 <Receipt className="mr-1.5 h-3.5 w-3.5" /> Pay Stub Analysis
               </Badge>
               <Badge className="bg-white/20 text-white border-0 py-1.5 px-3">
-                <MapPin className="mr-1.5 h-3.5 w-3.5" /> 26 State Tax Rates
+                <MapPin className="mr-1.5 h-3.5 w-3.5" /> 28 State Tax Rates
               </Badge>
+              <Badge className="bg-white/20 text-white border-0 py-1.5 px-3">
+                <TrendingUp className="mr-1.5 h-3.5 w-3.5" /> Capital Gains
+              </Badge>
+              <Badge className="bg-white/20 text-white border-0 py-1.5 px-3">
+                <Lightbulb className="mr-1.5 h-3.5 w-3.5" /> 45+ Term Glossary
+              </Badge>
+            </div>
+            {/* Stats Bar */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
+                <div className="text-2xl sm:text-3xl font-bold">10</div>
+                <div className="text-xs text-emerald-200">Learning Sections</div>
+              </div>
+              <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
+                <div className="text-2xl sm:text-3xl font-bold">7</div>
+                <div className="text-xs text-emerald-200">Federal Tax Brackets</div>
+              </div>
+              <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
+                <div className="text-2xl sm:text-3xl font-bold">28</div>
+                <div className="text-xs text-emerald-200">States Covered</div>
+              </div>
+              <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
+                <div className="text-2xl sm:text-3xl font-bold">6</div>
+                <div className="text-xs text-emerald-200">Real-World Scenarios</div>
+              </div>
             </div>
           </motion.div>
         </div>
@@ -693,6 +725,11 @@ export default function HomePage() {
             </motion.div>
           </TabsContent>
 
+          {/* ===== TAXATION ===== */}
+          <TabsContent value="taxation">
+            <TaxationSection />
+          </TabsContent>
+
           {/* ===== FICA ===== */}
           <TabsContent value="fica">
             <motion.div {...fadeIn} className="space-y-6">
@@ -1068,6 +1105,11 @@ export default function HomePage() {
                 </CardContent>
               </Card>
             </motion.div>
+          </TabsContent>
+
+          {/* ===== GLOSSARY ===== */}
+          <TabsContent value="glossary">
+            <GlossarySection />
           </TabsContent>
 
           {/* ===== FORMS ===== */}
