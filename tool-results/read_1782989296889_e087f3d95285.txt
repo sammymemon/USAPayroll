@@ -1,0 +1,845 @@
+     1→"use client";
+     2→
+     3→import { useState } from "react";
+     4→import { motion } from "framer-motion";
+     5→import {
+     6→  Card,
+     7→  CardContent,
+     8→  CardDescription,
+     9→  CardHeader,
+    10→  CardTitle,
+    11→} from "@/components/ui/card";
+    12→import { Badge } from "@/components/ui/badge";
+    13→import { Separator } from "@/components/ui/separator";
+    14→import {
+    15→  Accordion,
+    16→  AccordionContent,
+    17→  AccordionItem,
+    18→  AccordionTrigger,
+    19→} from "@/components/ui/accordion";
+    20→import {
+    21→  Table,
+    22→  TableBody,
+    23→  TableCell,
+    24→  TableHead,
+    25→  TableHeader,
+    26→  TableRow,
+    27→} from "@/components/ui/table";
+    28→import {
+    29→  Landmark,
+    30→  TrendingUp,
+    31→  Receipt,
+    32→  Lightbulb,
+    33→  AlertTriangle,
+    34→  CheckCircle2,
+    35→  ArrowRight,
+    36→  DollarSign,
+    37→  Percent,
+    38→  FileText,
+    39→  PiggyBank,
+    40→  Home,
+    41→  Heart,
+    42→  GraduationCap,
+    43→  Car,
+    44→  Baby,
+    45→  Zap,
+    46→  BarChart3,
+    47→  Scale,
+    48→  Shield,
+    49→  Target,
+    50→} from "lucide-react";
+    51→import {
+    52→  BarChart,
+    53→  Bar,
+    54→  XAxis,
+    55→  YAxis,
+    56→  CartesianGrid,
+    57→  Tooltip as RTooltip,
+    58→  ResponsiveContainer,
+    59→  Legend,
+    60→} from "recharts";
+    61→
+    62→const fadeIn = {
+    63→  initial: { opacity: 0, y: 16 },
+    64→  animate: { opacity: 1, y: 0 },
+    65→  transition: { duration: 0.35 },
+    66→};
+    67→
+    68→export default function TaxationSection() {
+    69→  const [activeTopic, setActiveTopic] = useState<string | null>("overview");
+    70→
+    71→  return (
+    72→    <motion.div {...fadeIn} className="space-y-6">
+    73→      {/* Overview: Types of US Taxes */}
+    74→      <Card className="border-2 border-emerald-200 dark:border-emerald-800">
+    75→        <CardHeader>
+    76→          <CardTitle className="flex items-center gap-2">
+    77→            <Landmark className="h-5 w-5 text-emerald-600" />
+    78→            Types of US Taxes — Complete Picture
+    79→          </CardTitle>
+    80→          <CardDescription>
+    81→            The US tax system is multi-layered. Here&apos;s every tax you might encounter as an individual.
+    82→          </CardDescription>
+    83→        </CardHeader>
+    84→        <CardContent>
+    85→          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    86→            <TaxTypeCard
+    87→              icon={DollarSign}
+    88→              title="Federal Income Tax"
+    89→              rate="10% – 37%"
+    90→              description="Progressive tax on your earnings. Applied after deductions. Covers the majority of federal revenue."
+    91→              whoPays="Most workers (W-2 and 1099)"
+    92→              color="red"
+    93→            />
+    94→            <TaxTypeCard
+    95→              icon={Shield}
+    96→              title="Payroll Tax (FICA)"
+    97→              rate="7.65% + 0.9%"
+    98→              description="Social Security (6.2%) + Medicare (1.45%) + Additional Medicare (0.9% over $200K). Flat rate, shared with employer."
+    99→              whoPays="All W-2 employees"
+   100→              color="orange"
+   101→            />
+   102→            <TaxTypeCard
+   103→              icon={TrendingUp}
+   104→              title="Capital Gains Tax"
+   105→              rate="0% – 37%"
+   106→              description="Tax on profit from selling investments. Long-term (held 1yr+) gets preferential rates: 0%, 15%, or 20%."
+   107→              whoPays="Investors, home sellers"
+   108→              color="emerald"
+   109→            />
+   110→            <TaxTypeCard
+   111→              icon={Receipt}
+   112→              title="State & Local Tax (SALT)"
+   113→              rate="0% – 13.3%"
+   114→              description="State income tax + local/city taxes. 9 states have no income tax. Capped at $10K deduction for federal."
+   115→              whoPays="Residents of most states"
+   116→              color="purple"
+   117→            />
+   118→            <TaxTypeCard
+   119→              icon={Home}
+   120→              title="Property Tax"
+   121→              rate="0.3% – 2.5%"
+   122→              description="Annual tax on real estate based on assessed value. Varies wildly by county. Deductible on Schedule A."
+   123→              whoPays="Homeowners"
+   124→              color="teal"
+   125→            />
+   126→            <TaxTypeCard
+   127→              icon={Car}
+   128→              title="Sales Tax"
+   129→              rate="0% – 10.25%"
+   130→              description="Consumption tax on purchases. 5 states have no sales tax. Not deductible (after 2018 TCJA)."
+   131→              whoPays="All consumers"
+   132→              color="amber"
+   133→            />
+   134→          </div>
+   135→        </CardContent>
+   136→      </Card>
+   137→
+   138→      {/* Capital Gains Tax */}
+   139→      <Card>
+   140→        <CardHeader>
+   141→          <CardTitle className="flex items-center gap-2">
+   142→            <TrendingUp className="h-5 w-5 text-emerald-600" />
+   143→            Capital Gains Tax — Detailed Guide
+   144→          </CardTitle>
+   145→          <CardDescription>
+   146→            How investments are taxed differently from ordinary income — one of the biggest tax advantages in the US
+   147→          </CardDescription>
+   148→        </CardHeader>
+   149→        <CardContent className="space-y-6">
+   150→          {/* Short vs Long Term */}
+   151→          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+   152→            <Card className="border-red-200 dark:border-red-800 bg-red-50/50 dark:bg-red-950/20">
+   153→              <CardContent className="pt-4">
+   154→                <div className="flex items-center gap-2 mb-2">
+   155→                  <AlertTriangle className="h-4 w-4 text-red-600" />
+   156→                  <h4 className="font-semibold text-sm">Short-Term Capital Gains</h4>
+   157→                </div>
+   158→                <p className="text-sm text-muted-foreground mb-3">
+   159→                  Assets held <strong>1 year or less</strong>. Taxed at your <strong>ordinary income tax rate</strong> (10%–37%).
+   160→                  No preferential treatment.
+   161→                </p>
+   162→                <div className="bg-white dark:bg-gray-900 rounded-lg p-3 space-y-1.5">
+   163→                  <div className="text-xs font-semibold text-muted-foreground mb-1">Example: Stock sold after 8 months</div>
+   164→                  <div className="flex justify-between text-sm">
+   165→                    <span>Purchase price</span>
+   166→                    <span className="font-mono">$10,000</span>
+   167→                  </div>
+   168→                  <div className="flex justify-between text-sm">
+   169→                    <span>Sell price</span>
+   170→                    <span className="font-mono">$15,000</span>
+   171→                  </div>
+   172→                  <div className="flex justify-between text-sm font-bold border-t pt-1">
+   173→                    <span>Gain</span>
+   174→                    <span className="text-red-600">$5,000</span>
+   175→                  </div>
+   176→                  <div className="flex justify-between text-sm">
+   177→                    <span>Tax at 24% (e.g.)</span>
+   178→                    <span className="text-red-600 font-semibold">-$1,200</span>
+   179→                  </div>
+   180→                </div>
+   181→              </CardContent>
+   182→            </Card>
+   183→            <Card className="border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20">
+   184→              <CardContent className="pt-4">
+   185→                <div className="flex items-center gap-2 mb-2">
+   186→                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+   187→                  <h4 className="font-semibold text-sm">Long-Term Capital Gains</h4>
+   188→                </div>
+   189→                <p className="text-sm text-muted-foreground mb-3">
+   190→                  Assets held <strong>more than 1 year</strong>. Get preferential rates: <strong>0%, 15%, or 20%</strong>.
+   191→                  This is a massive tax advantage for investors.
+   192→                </p>
+   193→                <div className="bg-white dark:bg-gray-900 rounded-lg p-3 space-y-1.5">
+   194→                  <div className="text-xs font-semibold text-muted-foreground mb-1">Example: Same stock, held 13 months</div>
+   195→                  <div className="flex justify-between text-sm">
+   196→                    <span>Purchase price</span>
+   197→                    <span className="font-mono">$10,000</span>
+   198→                  </div>
+   199→                  <div className="flex justify-between text-sm">
+   200→                    <span>Sell price</span>
+   201→                    <span className="font-mono">$15,000</span>
+   202→                  </div>
+   203→                  <div className="flex justify-between text-sm font-bold border-t pt-1">
+   204→                    <span>Gain</span>
+   205→                    <span className="text-emerald-700">$5,000</span>
+   206→                  </div>
+   207→                  <div className="flex justify-between text-sm">
+   208→                    <span>Tax at 15% (LTCG)</span>
+   209→                    <span className="text-red-600 font-semibold">-$750</span>
+   210→                  </div>
+   211→                </div>
+   212→                <div className="mt-2 bg-emerald-100 dark:bg-emerald-900/40 rounded px-2 py-1 text-xs font-semibold text-emerald-800 dark:text-emerald-200 text-center">
+   213→                  You save $450 by holding 5 months longer!
+   214→                </div>
+   215→              </CardContent>
+   216→            </Card>
+   217→          </div>
+   218→
+   219→          {/* LTCG Rate Table */}
+   220→          <div>
+   221→            <h4 className="text-sm font-semibold mb-3">2024 Long-Term Capital Gains Rates</h4>
+   222→            <div className="rounded-lg border overflow-x-auto">
+   223→              <Table>
+   224→                <TableHeader>
+   225→                  <TableRow className="bg-muted/50">
+   226→                    <TableHead>Filing Status</TableHead>
+   227→                    <TableHead className="text-right">0% Rate</TableHead>
+   228→                    <TableHead className="text-right">15% Rate</TableHead>
+   229→                    <TableHead className="text-right">20% Rate</TableHead>
+   230→                    <TableHead className="text-right">NIIT (3.8%)</TableHead>
+   231→                  </TableRow>
+   232→                </TableHeader>
+   233→                <TableBody>
+   234→                  <TableRow>
+   235→                    <TableCell className="font-medium">Single</TableCell>
+   236→                    <TableCell className="text-right font-mono text-xs">Up to $47,025</TableCell>
+   237→                    <TableCell className="text-right font-mono text-xs">$47,026 – $518,900</TableCell>
+   238→                    <TableCell className="text-right font-mono text-xs">Over $518,900</TableCell>
+   239→                    <TableCell className="text-right font-mono text-xs">Over $200,000</TableCell>
+   240→                  </TableRow>
+   241→                  <TableRow>
+   242→                    <TableCell className="font-medium">Married Filing Jointly</TableCell>
+   243→                    <TableCell className="text-right font-mono text-xs">Up to $94,050</TableCell>
+   244→                    <TableCell className="text-right font-mono text-xs">$94,051 – $583,750</TableCell>
+   245→                    <TableCell className="text-right font-mono text-xs">Over $583,750</TableCell>
+   246→                    <TableCell className="text-right font-mono text-xs">Over $250,000</TableCell>
+   247→                  </TableRow>
+   248→                </TableBody>
+   249→              </Table>
+   250→            </div>
+   251→            <div className="mt-2 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-2.5 text-xs text-muted-foreground">
+   252→              <strong>NIIT:</strong> Net Investment Income Tax — additional 3.8% on investment income if your MAGI exceeds $200K (single) or $250K (married). 
+   253→              <strong>High-income exception:</strong> Additional 5% rate applies to income over ~$500K+ (varies by filing status).
+   254→            </div>
+   255→          </div>
+   256→
+   257→          {/* Capital Losses */}
+   258→          <Card className="bg-muted/30">
+   259→            <CardHeader className="pb-2">
+   260→              <CardTitle className="text-sm">Tax-Loss Harvesting</CardTitle>
+   261→            </CardHeader>
+   262→            <CardContent className="text-sm space-y-2 text-muted-foreground">
+   263→              <p>
+   264→                If you sell investments at a loss, you can use those losses to offset capital gains. If losses exceed gains, 
+   265→                you can deduct up to <strong>$3,000/year</strong> against ordinary income and carry forward unlimited losses to future years.
+   266→              </p>
+   267→              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+   268→                <div className="bg-white dark:bg-gray-900 rounded p-2.5">
+   269→                  <div className="text-xs font-semibold mb-1">Example: Harvesting Losses</div>
+   270→                  <div className="text-xs">Stock A gain: <strong className="text-emerald-700">+$8,000</strong></div>
+   271→                  <div className="text-xs">Stock B loss: <strong className="text-red-600">-$8,000</strong></div>
+   272→                  <div className="text-xs mt-1 font-semibold">Net taxable gain: <span className="text-emerald-700">$0</span></div>
+   273→                  <div className="text-xs">You owe $0 in capital gains tax!</div>
+   274→                </div>
+   275→                <div className="bg-emerald-50 dark:bg-emerald-950/30 rounded p-2.5">
+   276→                  <div className="flex items-start gap-1.5">
+   277→                    <Lightbulb className="h-3.5 w-3.5 text-emerald-600 mt-0.5 flex-shrink-0" />
+   278→                    <span className="text-xs">
+   279→                      <strong>Wash Sale Rule:</strong> If you sell at a loss and buy the same (or substantially identical) 
+   280→                      security within 30 days, the loss is disallowed. Buy a different fund/stock instead.
+   281→                    </span>
+   282→                  </div>
+   283→                </div>
+   284→              </div>
+   285→            </CardContent>
+   286→          </Card>
+   287→        </CardContent>
+   288→      </Card>
+   289→
+   290→      {/* Deductions vs Credits */}
+   291→      <Card>
+   292→        <CardHeader>
+   293→          <CardTitle className="flex items-center gap-2">
+   294→            <Scale className="h-5 w-5 text-emerald-600" />
+   295→            Tax Deductions vs Tax Credits — Critical Difference
+   296→          </CardTitle>
+   297→          <CardDescription>
+   298→            Understanding this difference is key to reducing your tax bill effectively
+   299→          </CardDescription>
+   300→        </CardHeader>
+   301→        <CardContent className="space-y-4">
+   302→          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+   303→            <Card className="border-2 border-orange-200 dark:border-orange-800">
+   304→              <CardContent className="pt-4">
+   305→                <div className="text-center mb-3">
+   306→                  <Percent className="h-8 w-8 text-orange-600 mx-auto mb-1" />
+   307→                  <h4 className="font-bold text-lg">Tax Deduction</h4>
+   308→                  <p className="text-xs text-muted-foreground">Reduces taxable income</p>
+   309→                </div>
+   310→                <div className="bg-orange-50 dark:bg-orange-950/30 rounded-lg p-3 mb-3">
+   311→                  <div className="text-sm text-center">
+   312→                    <div className="text-xs text-muted-foreground">$10,000 deduction at 24% bracket</div>
+   313→                    <div className="text-xl font-bold text-orange-700 mt-1">Saves $2,400</div>
+   314→                  </div>
+   315→                </div>
+   316→                <p className="text-xs text-muted-foreground">
+   317→                  A deduction reduces your <em>taxable income</em>. The actual savings depend on your tax bracket.
+   318→                  Higher earners benefit more from deductions.
+   319→                </p>
+   320→                <div className="mt-3 space-y-1">
+   321→                  <div className="text-xs font-semibold">Common Deductions:</div>
+   322→                  <DeductionItem name="Standard Deduction" detail="$14,600 (single) / $29,200 (married)" />
+   323→                  <DeductionItem name="Mortgage Interest" detail="Up to $750K loan" />
+   324→                  <DeductionItem name="State & Local Taxes (SALT)" detail="Capped at $10,000" />
+   325→                  <DeductionItem name="Charitable Donations" detail="Cash: 60% of AGI; Stock: 30% of AGI" />
+   326→                  <DeductionItem name="Medical Expenses" detail="Over 7.5% of AGI" />
+   327→                </div>
+   328→              </CardContent>
+   329→            </Card>
+   330→            <Card className="border-2 border-emerald-200 dark:border-emerald-800">
+   331→              <CardContent className="pt-4">
+   332→                <div className="text-center mb-3">
+   333→                  <Zap className="h-8 w-8 text-emerald-600 mx-auto mb-1" />
+   334→                  <h4 className="font-bold text-lg">Tax Credit</h4>
+   335→                  <p className="text-xs text-muted-foreground">Directly reduces tax owed</p>
+   336→                </div>
+   337→                <div className="bg-emerald-50 dark:bg-emerald-950/30 rounded-lg p-3 mb-3">
+   338→                  <div className="text-sm text-center">
+   339→                    <div className="text-xs text-muted-foreground">$2,000 credit regardless of bracket</div>
+   340→                    <div className="text-xl font-bold text-emerald-700 mt-1">Saves $2,000</div>
+   341→                  </div>
+   342→                </div>
+   343→                <p className="text-xs text-muted-foreground">
+   344→                  A credit reduces your <em>actual tax bill</em> dollar-for-dollar. <strong>Refundable</strong> credits can even give you money back.
+   345→                  Credits are generally more valuable than deductions.
+   346→                </p>
+   347→                <div className="mt-3 space-y-1">
+   348→                  <div className="text-xs font-semibold">Valuable Tax Credits:</div>
+   349→                  <DeductionItem name="Child Tax Credit" detail="$2,000/child (refundable up to $1,700)" />
+   350→                  <DeductionItem name="Earned Income Credit (EITC)" detail="Up to $7,430 (refundable)" />
+   351→                  <DeductionItem name="American Opportunity Credit" detail="$2,500/student (40% refundable)" />
+   352→                  <DeductionItem name="Saver's Credit" detail="Up to $1,000 (50% of contribution)" />
+   353→                  <DeductionItem name="EV Tax Credit" detail="Up to $7,500 (new EVs)" />
+   354→                </div>
+   355→              </CardContent>
+   356→            </Card>
+   357→          </div>
+   358→
+   359→          {/* Itemized vs Standard */}
+   360→          <Card className="bg-muted/30">
+   361→            <CardHeader className="pb-2">
+   362→              <CardTitle className="text-sm">Standard vs Itemized Deduction — Which to Choose?</CardTitle>
+   363→            </CardHeader>
+   364→            <CardContent>
+   365→              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+   366→                <div className="p-3 rounded-lg bg-white dark:bg-gray-900 border-2 border-emerald-200 dark:border-emerald-800">
+   367→                  <h5 className="font-semibold text-sm mb-1 flex items-center gap-1.5">
+   368→                    <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+   369→                    Choose Standard When...
+   370→                  </h5>
+   371→                  <ul className="text-xs text-muted-foreground space-y-1 mt-1">
+   372→                    <li>• Your itemized deductions &lt; standard deduction</li>
+   373→                    <li>• You rent (no mortgage interest)</li>
+   374→                    <li>• You don&apos;t have large medical expenses</li>
+   375→                    <li>• SALT cap ($10K) limits your state tax deduction</li>
+   376→                    <li>• ~90% of taxpayers use the standard deduction</li>
+   377→                  </ul>
+   378→                </div>
+   379→                <div className="p-3 rounded-lg bg-white dark:bg-gray-900 border-2 border-orange-200 dark:border-orange-800">
+   380→                  <h5 className="font-semibold text-sm mb-1 flex items-center gap-1.5">
+   381→                    <Receipt className="h-4 w-4 text-orange-600" />
+   382→                    Choose Itemized When...
+   383→                  </h5>
+   384→                  <ul className="text-xs text-muted-foreground space-y-1 mt-1">
+   385→                    <li>• You have a large mortgage ($750K+ loan)</li>
+   386→                    <li>• You pay high state/local taxes (but capped at $10K)</li>
+   387→                    <li>• You make significant charitable donations</li>
+   388→                    <li>• You have large medical expenses (&gt;7.5% AGI)</li>
+   389→                    <li>• You had casualty/theft losses (federally declared disaster)</li>
+   390→                  </ul>
+   391→                </div>
+   392→              </div>
+   393→            </CardContent>
+   394→          </Card>
+   395→        </CardContent>
+   396→      </Card>
+   397→
+   398→      {/* Major Tax Credits */}
+   399→      <Card>
+   400→        <CardHeader>
+   401→          <CardTitle className="flex items-center gap-2">
+   402→            <Zap className="h-5 w-5 text-emerald-600" />
+   403→            Major Tax Credits Worth Knowing
+   404→          </CardTitle>
+   405→          <CardDescription>
+   406→            These credits can save you thousands — make sure you claim everything you qualify for
+   407→          </CardDescription>
+   408→        </CardHeader>
+   409→        <CardContent>
+   410→          <div className="space-y-4">
+   411→            <CreditCard
+   412→              icon={Baby}
+   413→              title="Child Tax Credit"
+   414→              amount="$2,000 per qualifying child"
+   415→              refundable="Yes, up to $1,700 per child"
+   416→              incomeLimit="Phase-out begins at $200K (single) / $400K (married)"
+   417→              description="Children under 17 who lived with you for 6+ months. Must have SSN. The refundable portion means you can get money back even if you owe no tax."
+   418→              example="2 kids = $4,000 credit. If you owe $3,000 in tax, your bill drops to $0 and you get $1,000+ refund."
+   419→            />
+   420→            <CreditCard
+   421→              icon={Heart}
+   422→              title="Earned Income Tax Credit (EITC)"
+   423→              amount="Up to $7,430 (2024, 3+ children)"
+   424→              refundable="Fully refundable"
+   425→              incomeLimit="Up to $63,398 (married, 3+ children)"
+   426→              description="For low-to-moderate income working individuals and families. One of the most impactful anti-poverty programs in the US. ~25% of eligible taxpayers don't claim it!"
+   427→              example="Single parent, 1 child, earning $25,000 → could receive ~$3,995 as a refund check."
+   428→            />
+   429→            <CreditCard
+   430→              icon={GraduationCap}
+   431→              title="American Opportunity Tax Credit (AOTC)"
+   432→              amount="Up to $2,500 per student"
+   433→              refundable="40% refundable ($1,000 max)"
+   434→              incomeLimit="Phase-out $80K-$90K (single) / $160K-$180K (married)"
+   435→              description="For first 4 years of college. Covers tuition, fees, books, supplies. 100% of first $2,000 + 25% of next $2,000. Can only claim for 4 years per student."
+   436→              example="$4,000 in qualified expenses → $2,500 credit. If you owe $0 tax, you get $1,000 refund."
+   437→            />
+   438→            <CreditCard
+   439→              icon={Car}
+   440→              title="Clean Vehicle (EV) Tax Credit"
+   441→              amount="Up to $7,500"
+   442→              refundable="Non-refundable (but can carry forward)"
+   443→              incomeLimit="New: $150K single / $300K married. Used: $75K/$150K"
+   444→              description="For new EVs assembled in North America meeting battery/critical mineral requirements. Starting 2024, the credit is applied at the dealership (point-of-sale)."
+   445→              example="Buy a Tesla Model Y for $45,000 → $7,500 discount at dealer → effective price $37,500. Used EV: up to $4,000."
+   446→            />
+   447→            <CreditCard
+   448→              icon={PiggyBank}
+   449→              title="Saver's Credit (Retirement Savings Contributions Credit)"
+   450→              amount="Up to $1,000 ($2,000 married)"
+   451→              refundable="Non-refundable"
+   452→              incomeLimit="Up to $38,500 (single) / $76,500 (married)"
+   453→              description="Credit for contributions to 401(k), IRA, or similar retirement accounts. 50% credit on first $2,000 contributed (for lowest income bracket). Often overlooked!"
+   454→              example="Earn $20,000 and contribute $2,000 to a Roth IRA → $1,000 credit reduces your tax bill."
+   455→            />
+   456→          </div>
+   457→        </CardContent>
+   458→      </Card>
+   459→
+   460→      {/* AMT */}
+   461→      <Card className="border-2 border-amber-200 dark:border-amber-800">
+   462→        <CardHeader>
+   463→          <CardTitle className="text-base flex items-center gap-2">
+   464→            <AlertTriangle className="h-4 w-4 text-amber-600" />
+   465→            Alternative Minimum Tax (AMT)
+   466→          </CardTitle>
+   467→        </CardHeader>
+   468→        <CardContent className="text-sm space-y-3 text-muted-foreground">
+   469→          <p>
+   470→            The AMT is a <strong>parallel tax system</strong> designed to ensure high-income taxpayers pay at least a minimum 
+   471→            amount of tax. You must calculate your taxes under both the regular system and AMT, and pay whichever is higher.
+   472→          </p>
+   473→          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+   474→            <div className="bg-amber-50 dark:bg-amber-950/30 rounded p-3">
+   475→              <div className="text-xs font-semibold mb-1">AMT Exemption (2024)</div>
+   476→              <div className="text-xs">Single: <strong>$81,300</strong></div>
+   477→              <div className="text-xs">Married: <strong>$126,500</strong></div>
+   478→              <div className="text-xs mt-1 text-amber-700">Phase-out begins at $609,350 (single) / $1,218,700 (married)</div>
+   479→            </div>
+   480→            <div className="bg-amber-50 dark:bg-amber-950/30 rounded p-3">
+   481→              <div className="text-xs font-semibold mb-1">AMT Tax Rates</div>
+   482→              <div className="text-xs">26% on first <strong>$232,600</strong></div>
+   483→              <div className="text-xs">28% on income above <strong>$232,600</strong></div>
+   484→              <div className="text-xs mt-1 text-amber-700">Fewer deductions allowed under AMT (no SALT, limited misc.)</div>
+   485→            </div>
+   486→          </div>
+   487→          <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-lg p-3">
+   488→            <div className="flex items-start gap-2">
+   489→              <Lightbulb className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+   490→              <span className="text-xs">
+   491→                <strong>Who gets hit?</strong> Taxpayers with high SALT deductions, many dependents, ISO exercises, 
+   492→                or large miscellaneous deductions. Tax software handles AMT calculation automatically.
+   493→              </span>
+   494→            </div>
+   495→          </div>
+   496→        </CardContent>
+   497→      </Card>
+   498→
+   499→      {/* Tax Filing Guide */}
+   500→      <Card>
+   501→        <CardHeader>
+   502→          <CardTitle className="flex items-center gap-2">
+   503→            <FileText className="h-5 w-5 text-emerald-600" />
+   504→            Tax Filing Guide — Step by Step
+   505→          </CardTitle>
+   506→        </CardHeader>
+   507→        <CardContent>
+   508→          <div className="space-y-3">
+   509→            <TimelineStep
+   510→              step="1"
+   511→              title="Gather Documents (Jan – Feb)"
+   512→              items={["W-2 from each employer (by Jan 31)", "1099-NEC/1099-MISC for contract/freelance income", "1099-INT for interest, 1099-DIV for dividends", "1099-B for investment sales (capital gains)", "1098 for mortgage interest paid", "Charitable donation receipts", "Health insurance forms (1095-A/B/C)"]}
+   513→            />
+   514→            <TimelineStep
+   515→              step="2"
+   516→              title="Choose How to File"
+   517→              items={["Free: IRS Free File (income under $84,000)", "Free: FreeTaxUSA, Credit Karma Tax", "Paid: TurboTax, H&R Block, TaxAct ($30-$120+)", "Best for complex situations: CPA/Enrolled Agent ($200-$500+)", "Deadline: April 15 (or next business day)"]}
+   518→            />
+   519→            <TimelineStep
+   520→              step="3"
+   521→              title="Calculate Your Tax"
+   522→              items={["Enter all income (W-2s, 1099s, other)", "Choose: Standard deduction OR Itemize deductions", "Apply tax credits you qualify for", "Calculate: Total Tax − Payments = Refund/Owed", "Double-check all numbers before filing!"]}
+   523→            />
+   524→            <TimelineStep
+   525→              step="4"
+   526→              title="File and Pay"
+   527→              items={["E-file is faster and more accurate", "Choose direct deposit for fastest refund (2-3 weeks)", "If you owe: pay by April 15 to avoid penalties", "Can request 6-month extension (Oct 15), but still must pay by April 15", "Keep records for 3-7 years (3 years minimum, 7 for some cases)"]}
+   528→            />
+   529→          </div>
+   530→
+   531→          <Separator className="my-4" />
+   532→
+   533→          {/* Important Deadlines */}
+   534→          <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+   535→            <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
+   536→              <AlertTriangle className="h-4 w-4 text-red-600" />
+   537→              Key Tax Deadlines (2025 filing for 2024 tax year)
+   538→            </h4>
+   539→            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+   540→              <DeadlineItem date="Jan 15" desc="Q4 2024 estimated tax payment" />
+   541→              <DeadlineItem date="Jan 31" desc="W-2, 1099s must be sent to you" />
+   542→              <DeadlineItem date="Apr 15" desc="Individual tax returns due" highlight />
+   543→              <DeadlineItem date="Apr 15" desc="Q1 2025 estimated tax payment" />
+   544→              <DeadlineItem date="Jun 16" desc="Q2 2025 estimated tax payment" />
+   545→              <DeadlineItem date="Oct 15" desc="Extended returns due" />
+   546→            </div>
+   547→          </div>
+   548→        </CardContent>
+   549→      </Card>
+   550→
+   551→      {/* Tax Planning Strategies */}
+   552→      <Card>
+   553→        <CardHeader>
+   554→          <CardTitle className="flex items-center gap-2">
+   555→            <Target className="h-5 w-5 text-emerald-600" />
+   556→            Tax Planning Strategies That Actually Work
+   557→          </CardTitle>
+   558→        </CardHeader>
+   559→        <CardContent>
+   560→          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+   561→            <StrategyCard
+   562→              number="1"
+   563→              title="Max Out Tax-Advantaged Accounts"
+   564→              items={[
+   565→                "401(k): $23,000 ($30,500 if 50+)",
+   566→                "IRA: $7,000 ($8,000 if 50+)",
+   567→                "HSA: $4,150 individual / $8,300 family",
+   568→                "529 Plan: State tax deduction + tax-free growth",
+   569→              ]}
+   570→              savings="Can save $2,000-$7,000+ per year in taxes"
+   571→            />
+   572→            <StrategyCard
+   573→              number="2"
+   574→              title="Roth vs Traditional Strategy"
+   575→              items={[
+   576→                "Traditional: Deduct contributions now, pay tax on withdrawal",
+   577→                "Roth: No deduction now, but tax-free withdrawal",
+   578→                "Rule of thumb: Traditional if current bracket > retirement bracket",
+   579→                "Roth if you expect higher income/taxes in retirement",
+   580→              ]}
+   581→              savings="Strategic Roth conversion in low-income years"
+   582→            />
+   583→            <StrategyCard
+   584→              number="3"
+   585→              title="Harvest Capital Losses Annually"
+   586→              items={[
+   587→                "Sell losing positions before Dec 31 to realize losses",
+   588→                "Offset gains first, then deduct $3K ordinary income",
+   589→                "Carry forward remaining losses indefinitely",
+   590→                "Watch the wash sale rule (30-day waiting period)",
+   591→              ]}
+   592→              savings="Can save $3,000+ per year in taxable income"
+   593→            />
+   594→            <StrategyCard
+   595→              number="4"
+   596→              title="Time Income and Deductions"
+   597→              items={[
+   598→                "Defer bonuses/commissions to next year if expecting lower income",
+   599→                "Bunch charitable donations into one year (donor-advised fund)",
+   600→                "Accelerate deductions into high-income years",
+   601→                "Consider Roth conversions in low-income years (gap year, sabbatical)",
+   602→              ]}
+   603→              savings="Smooths out tax brackets across years"
+   604→            />
+   605→            <StrategyCard
+   606→              number="5"
+   607→              title="Use the Qualified Business Income Deduction"
+   608→              items={[
+   609→                "20% deduction on qualified business income (QBI)",
+   610→                "For freelancers, LLC owners, S-Corp shareholders",
+   611→                "Phase-out at $191,950 (single) / $383,900 (married)",
+   612→                "Some service businesses (consulting, law) face limits",
+   613→              ]}
+   614→              savings="Up to 20% off your business income"
+   615→            />
+   616→            <StrategyCard
+   617→              number="6"
+   618→              title="Health Savings Account (HSA) Triple Tax Advantage"
+   619→              items={[
+   620→                "Contributions are tax-deductible",
+   621→                "Growth is tax-free",
+   622→                "Withdrawals for medical expenses are tax-free",
+   623→                "After 65: can use like a traditional IRA for any purpose",
+   624→              ]}
+   625→              savings="The only account with triple tax advantage"
+   626→            />
+   627→          </div>
+   628→        </CardContent>
+   629→      </Card>
+   630→
+   631→      {/* Tax Brackets Comparison Visual */}
+   632→      <Card>
+   633→        <CardHeader>
+   634→          <CardTitle className="flex items-center gap-2">
+   635→            <BarChart3 className="h-5 w-5 text-emerald-600" />
+   636→            Effective Tax Rate by Income Level
+   637→          </CardTitle>
+   638→          <CardDescription>
+   639→            See how the effective tax rate increases with income — it&apos;s not as scary as the marginal rates suggest
+   640→          </CardDescription>
+   641→        </CardHeader>
+   642→        <CardContent>
+   643→          <div className="h-[320px] w-full">
+   644→            <ResponsiveContainer>
+   645→              <BarChart
+   646→                data={[
+   647→                  { income: "$30K", federal: 5.5, fica: 7.7, total: 13.2 },
+   648→                  { income: "$50K", federal: 8.3, fica: 7.7, total: 16.0 },
+   649→                  { income: "$75K", federal: 11.1, fica: 7.7, total: 18.8 },
+   650→                  { income: "$100K", federal: 14.0, fica: 7.7, total: 21.7 },
+   651→                  { income: "$150K", federal: 18.3, fica: 7.5, total: 25.8 },
+   652→                  { income: "$200K", federal: 22.0, fica: 7.5, total: 29.5 },
+   653→                  { income: "$300K", federal: 26.5, fica: 5.9, total: 32.4 },
+   654→                  { income: "$500K", federal: 30.8, fluoride: 3.4, total: 34.2 },
+   655→                ]}
+   656→              >
+   657→                <CartesianGrid strokeDasharray="3 3" />
+   658→                <XAxis dataKey="income" tick={{ fontSize: 12 }} />
+   659→                <YAxis tick={{ fontSize: 12 }} unit="%" />
+   660→                <RTooltip formatter={(value: number) => [`${value}%`, ""]} />
+   661→                <Legend />
+   662→                <Bar dataKey="fica" name="FICA (SS + Medicare)" stackId="a" fill="#f97316" />
+   663→                <Bar dataKey="federal" name="Federal Income Tax" stackId="a" fill="#dc2626" />
+   664→              </BarChart>
+   665→            </ResponsiveContainer>
+   666→          </div>
+   667→          <p className="text-xs text-muted-foreground mt-2 text-center">
+   668→            *Effective rates shown for single filer in a no-tax state. State tax would add 0%–13% on top. Includes standard deduction.
+   669→          </p>
+   670→        </CardContent>
+   671→      </Card>
+   672→    </motion.div>
+   673→  );
+   674→}
+   675→
+   676→function TaxTypeCard({
+   677→  icon: Icon,
+   678→  title,
+   679→  rate,
+   680→  description,
+   681→  whoPays,
+   682→  color,
+   683→}: {
+   684→  icon: React.ComponentType<{ className?: string }>;
+   685→  title: string;
+   686→  rate: string;
+   687→  description: string;
+   688→  whoPays: string;
+   689→  color: string;
+   690→}) {
+   691→  return (
+   692→    <Card className="hover:shadow-md transition-shadow">
+   693→      <CardContent className="pt-4">
+   694→        <div className="flex items-start gap-3">
+   695→          <div className={`p-2 rounded-lg ${color === "emerald" ? "bg-emerald-100 dark:bg-emerald-900/50" : color === "red" ? "bg-red-100 dark:bg-red-900/50" : color === "orange" ? "bg-orange-100 dark:bg-orange-900/50" : color === "purple" ? "bg-purple-100 dark:bg-purple-900/50" : color === "teal" ? "bg-teal-100 dark:bg-teal-900/50" : "bg-amber-100 dark:bg-amber-900/50"}`}>
+   696→            <Icon className={`h-4 w-4 ${color === "emerald" ? "text-emerald-600" : color === "red" ? "text-red-600" : color === "orange" ? "text-orange-600" : color === "purple" ? "text-purple-600" : color === "teal" ? "text-teal-600" : "text-amber-600"}`} />
+   697→          </div>
+   698→          <div className="flex-1 min-w-0">
+   699→            <div className="flex items-center justify-between">
+   700→              <h4 className="font-semibold text-sm">{title}</h4>
+   701→              <Badge variant="secondary" className="text-[10px] flex-shrink-0 ml-2">{rate}</Badge>
+   702→            </div>
+   703→            <p className="text-xs text-muted-foreground mt-1">{description}</p>
+   704→            <div className="text-[10px] text-muted-foreground mt-1.5">
+   705→              <span className="font-medium">Who pays:</span> {whoPays}
+   706→            </div>
+   707→          </div>
+   708→        </div>
+   709→      </CardContent>
+   710→    </Card>
+   711→  );
+   712→}
+   713→
+   714→function DeductionItem({ name, detail }: { name: string; detail: string }) {
+   715→  return (
+   716→    <div className="flex items-center justify-between text-xs py-0.5">
+   717→      <span className="font-medium">{name}</span>
+   718→      <span className="text-muted-foreground text-right ml-2">{detail}</span>
+   719→    </div>
+   720→  );
+   721→}
+   722→
+   723→function CreditCard({
+   724→  icon: Icon,
+   725→  title,
+   726→  amount,
+   727→  refundable,
+   728→  incomeLimit,
+   729→  description,
+   730→  example,
+   731→}: {
+   732→  icon: React.ComponentType<{ className?: string }>;
+   733→  title: string;
+   734→  amount: string;
+   735→  refundable: string;
+   736→  incomeLimit: string;
+   737→  description: string;
+   738→  example: string;
+   739→}) {
+   740→  return (
+   741→    <Card className="hover:shadow-md transition-shadow">
+   742→      <CardContent className="pt-4">
+   743→        <div className="flex items-start gap-3">
+   744→          <Icon className="h-5 w-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+   745→          <div className="flex-1">
+   746→            <h4 className="font-semibold text-sm">{title}</h4>
+   747→            <div className="text-lg font-bold text-emerald-700">{amount}</div>
+   748→            <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-muted-foreground mt-1">
+   749→              <span><strong>Refundable:</strong> {refundable}</span>
+   750→              <span><strong>Income Limit:</strong> {incomeLimit}</span>
+   751→            </div>
+   752→            <p className="text-xs text-muted-foreground mt-2">{description}</p>
+   753→            <div className="bg-emerald-50 dark:bg-emerald-950/30 rounded px-2.5 py-1.5 mt-2 text-xs">
+   754→              <strong>Example:</strong> {example}
+   755→            </div>
+   756→          </div>
+   757→        </div>
+   758→      </CardContent>
+   759→    </Card>
+   760→  );
+   761→}
+   762→
+   763→function TimelineStep({
+   764→  step,
+   765→  title,
+   766→  items,
+   767→}: {
+   768→  step: string;
+   769→  title: string;
+   770→  items: string[];
+   771→}) {
+   772→  return (
+   773→    <div className="flex gap-4 items-start">
+   774→      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center text-sm font-bold">
+   775→        {step}
+   776→      </div>
+   777→      <div className="flex-1 pb-3 border-b last:border-0">
+   778→        <h4 className="font-semibold text-sm mb-1.5">{title}</h4>
+   779→        <ul className="space-y-0.5">
+   780→          {items.map((item, i) => (
+   781→            <li key={i} className="text-xs text-muted-foreground flex items-start gap-1.5">
+   782→              <ArrowRight className="h-3 w-3 text-emerald-600 mt-0.5 flex-shrink-0" />
+   783→              {item}
+   784→            </li>
+   785→          ))}
+   786→        </ul>
+   787→      </div>
+   788→    </div>
+   789→  );
+   790→}
+   791→
+   792→function DeadlineItem({
+   793→  date,
+   794→  desc,
+   795→  highlight,
+   796→}: {
+   797→  date: string;
+   798→  desc: string;
+   799→  highlight?: boolean;
+   800→}) {
+   801→  return (
+   802→    <div className={`flex items-center gap-2 ${highlight ? "font-semibold" : ""}`}>
+   803→      <Badge variant={highlight ? "destructive" : "outline"} className="text-[10px] w-16 justify-center flex-shrink-0">
+   804→        {date}
+   805→      </Badge>
+   806→      <span className="text-xs">{desc}</span>
+   807→    </div>
+   808→  );
+   809→}
+   810→
+   811→function StrategyCard({
+   812→  number,
+   813→  title,
+   814→  items,
+   815→  savings,
+   816→}: {
+   817→  number: string;
+   818→  title: string;
+   819→  items: string[];
+   820→  savings: string;
+   821→}) {
+   822→  return (
+   823→    <Card className="hover:shadow-md transition-shadow">
+   824→      <CardContent className="pt-4">
+   825→        <div className="flex items-start gap-2 mb-2">
+   826→          <div className="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-bold">
+   827→            {number}
+   828→          </div>
+   829→          <h4 className="font-semibold text-sm">{title}</h4>
+   830→        </div>
+   831→        <ul className="space-y-0.5 ml-8 mb-2">
+   832→          {items.map((item, i) => (
+   833→            <li key={i} className="text-xs text-muted-foreground flex items-start gap-1.5">
+   834→              <CheckCircle2 className="h-3 w-3 text-emerald-600 mt-0.5 flex-shrink-0" />
+   835→              {item}
+   836→            </li>
+   837→          ))}
+   838→        </ul>
+   839→        <div className="ml-8 text-xs font-semibold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/30 rounded px-2 py-1 inline-block">
+   840→          {savings}
+   841→        </div>
+   842→      </CardContent>
+   843→    </Card>
+   844→  );
+   845→}

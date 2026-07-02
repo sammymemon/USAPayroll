@@ -1,0 +1,692 @@
+     1→"use client";
+     2→
+     3→import { useState, useCallback } from "react";
+     4→import { motion, AnimatePresence } from "framer-motion";
+     5→import {
+     6→  Card,
+     7→  CardContent,
+     8→  CardDescription,
+     9→  CardHeader,
+    10→  CardTitle,
+    11→} from "@/components/ui/card";
+    12→import { Input } from "@/components/ui/input";
+    13→import { Label } from "@/components/ui/label";
+    14→import {
+    15→  Select,
+    16→  SelectContent,
+    17→  SelectItem,
+    18→  SelectTrigger,
+    19→  SelectValue,
+    20→} from "@/components/ui/select";
+    21→import { Button } from "@/components/ui/button";
+    22→import { Slider } from "@/components/ui/slider";
+    23→import { Separator } from "@/components/ui/separator";
+    24→import { Badge } from "@/components/ui/badge";
+    25→import {
+    26→  Tooltip,
+    27→  TooltipContent,
+    28→  TooltipProvider,
+    29→  TooltipTrigger,
+    30→} from "@/components/ui/tooltip";
+    31→import {
+    32→  Calculator,
+    33→  DollarSign,
+    34→  TrendingDown,
+    35→  Info,
+    36→  Receipt,
+    37→  PieChart,
+    38→  ChevronDown,
+    39→  ChevronUp,
+    40→} from "lucide-react";
+    41→import { PieChart as RechartsPie, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from "recharts";
+    42→
+    43→interface PayrollResult {
+    44→  summary: {
+    45→    grossPayPerPeriod: number;
+    46→    netPayPerPeriod: number;
+    47→    grossPayAnnual: number;
+    48→    netPayAnnual: number;
+    49→    totalDeductionsPerPeriod: number;
+    50→    totalDeductionsAnnual: number;
+    51→  };
+    52→  federalTax: {
+    53→    taxableIncome: number;
+    54→    standardDeduction: number;
+    55→    taxAnnual: number;
+    56→    taxPerPeriod: number;
+    57→    effectiveRate: number;
+    58→    marginalRate: number;
+    59→    brackets: {
+    60→      min: number;
+    61→      max: number | null;
+    62→      rate: number;
+    63→      taxableAmount: number;
+    64→      taxAmount: number;
+    65→    }[];
+    66→  };
+    67→  fica: {
+    68→    socialSecurity: { annual: number; perPeriod: number; wageBase: number; rate: number };
+    69→    medicare: { annual: number; perPeriod: number; rate: number };
+    70→    additionalMedicare: { annual: number; perPeriod: number; threshold: number; rate: number };
+    71→    totalAnnual: number;
+    72→    totalPerPeriod: number;
+    73→    effectiveRate: number;
+    74→  };
+    75→  stateTax: {
+    76→    stateCode: string;
+    77→    stateName: string;
+    78→    taxAnnual: number;
+    79→    taxPerPeriod: number;
+    80→    effectiveRate: number;
+    81→    hasStateTax: boolean;
+    82→  };
+    83→  deductions: {
+    84→    preTax401kPerPeriod: number;
+    85→    preTaxHealthInsurancePerPeriod: number;
+    86→    preTaxHSAPerPeriod: number;
+    87→    otherPreTaxPerPeriod: number;
+    88→    postTaxPerPeriod: number;
+    89→    totalPreTaxPerPeriod: number;
+    90→    totalPreTaxAnnual: number;
+    91→  };
+    92→  effectiveRates: {
+    93→    federal: number;
+    94→    fica: number;
+    95→    state: number;
+    96→    total: number;
+    97→  };
+    98→  payFrequency: string;
+    99→  numPeriods: number;
+   100→  filingStatus: string;
+   101→}
+   102→
+   103→const COLORS = ["#059669", "#dc2626", "#7c3aed", "#ea580c", "#ca8a04", "#0891b2"];
+   104→
+   105→function fmt(n: number): string {
+   106→  return new Intl.NumberFormat("en-US", {
+   107→    style: "currency",
+   108→    currency: "USD",
+   109→    minimumFractionDigits: 2,
+   110→  }).format(n);
+   111→}
+   112→
+   113→export default function PayrollCalculator() {
+   114→  const [annualSalary, setAnnualSalary] = useState(75000);
+   115→  const [payFrequency, setPayFrequency] = useState("biweekly");
+   116→  const [filingStatus, setFilingStatus] = useState("single");
+   117→  const [stateCode, setStateCode] = useState("CA");
+   118→  const [preTax401k, setPreTax401k] = useState(0);
+   119→  const [preTaxHealth, setPreTaxHealth] = useState(0);
+   120→  const [preTaxHSA, setPreTaxHSA] = useState(0);
+   121→  const [postTaxDeductions, setPostTaxDeductions] = useState(0);
+   122→  const [showBracketDetail, setShowBracketDetail] = useState(false);
+   123→
+   124→  // Hardcoded state list for stability
+   125→  const states = [
+   126→    { code: "TX", name: "Texas", noTax: true },
+   127→    { code: "FL", name: "Florida", noTax: true },
+   128→    { code: "WA", name: "Washington", noTax: true },
+   129→    { code: "NV", name: "Nevada", noTax: true },
+   130→    { code: "WY", name: "Wyoming", noTax: true },
+   131→    { code: "AK", name: "Alaska", noTax: true },
+   132→    { code: "SD", name: "South Dakota", noTax: true },
+   133→    { code: "TN", name: "Tennessee", noTax: true },
+   134→    { code: "NH", name: "New Hampshire", noTax: true },
+   135→    { code: "IL", name: "Illinois", noTax: false },
+   136→    { code: "IN", name: "Indiana", noTax: false },
+   137→    { code: "PA", name: "Pennsylvania", noTax: false },
+   138→    { code: "MI", name: "Michigan", noTax: false },
+   139→    { code: "CO", name: "Colorado", noTax: false },
+   140→    { code: "NC", name: "North Carolina", noTax: false },
+   141→    { code: "AZ", name: "Arizona", noTax: false },
+   142→    { code: "GA", name: "Georgia", noTax: false },
+   143→    { code: "MA", name: "Massachusetts", noTax: false },
+   144→    { code: "CA", name: "California", noTax: false },
+   145→    { code: "NY", name: "New York", noTax: false },
+   146→    { code: "NJ", name: "New Jersey", noTax: false },
+   147→    { code: "OR", name: "Oregon", noTax: false },
+   148→    { code: "HI", name: "Hawaii", noTax: false },
+   149→    { code: "CT", name: "Connecticut", noTax: false },
+   150→    { code: "OH", name: "Ohio", noTax: false },
+   151→    { code: "VA", name: "Virginia", noTax: false },
+   152→    { code: "MD", name: "Maryland", noTax: false },
+   153→    { code: "MN", name: "Minnesota", noTax: false },
+   154→  ];
+   155→
+   156→  const [result, setResult] = useState<PayrollResult | null>(null);
+   157→  const [isCalculating, setIsCalculating] = useState(false);
+   158→
+   159→  const handleCalculate = useCallback(async () => {
+   160→    setIsCalculating(true);
+   161→    try {
+   162→      const res = await fetch("/api/payroll/calculate", {
+   163→        method: "POST",
+   164→        headers: { "Content-Type": "application/json" },
+   165→        body: JSON.stringify({
+   166→          annualSalary,
+   167→          payFrequency,
+   168→          filingStatus,
+   169→          stateCode,
+   170→          preTax401k,
+   171→          preTaxHealthInsurance: preTaxHealth,
+   172→          preTaxHSA,
+   173→          otherPreTax: 0,
+   174→          postTaxDeductions,
+   175→        }),
+   176→      });
+   177→      if (!res.ok) throw new Error("Calculation failed");
+   178→      const data = await res.json();
+   179→      setResult(data);
+   180→    } catch {
+   181→      setResult(null);
+   182→    } finally {
+   183→      setIsCalculating(false);
+   184→    }
+   185→  }, [annualSalary, payFrequency, filingStatus, stateCode, preTax401k, preTaxHealth, preTaxHSA, postTaxDeductions]);
+   186→
+   187→  const pieData = result
+   188→    ? [
+   189→        { name: "Federal Income Tax", value: result.federalTax.taxPerPeriod },
+   190→        { name: "Social Security", value: result.fica.socialSecurity.perPeriod },
+   191→        { name: "Medicare", value: result.fica.medicare.perPeriod + result.fica.additionalMedicare.perPeriod },
+   192→        { name: "State Tax", value: result.stateTax.taxPerPeriod },
+   193→        { name: "Pre-tax Deductions", value: result.deductions.totalPreTaxPerPeriod },
+   194→        { name: "Post-tax Deductions", value: result.deductions.postTaxPerPeriod },
+   195→      ].filter((d) => d.value > 0)
+   196→    : [];
+   197→
+   198→  const netPayColor = "#059669";
+   199→  const deductionsColor = "#dc2626";
+   200→
+   201→  return (
+   202→    <div className="space-y-6">
+   203→      {/* Input Form */}
+   204→      <Card className="border-2 border-emerald-100 dark:border-emerald-900">
+   205→        <CardHeader>
+   206→          <CardTitle className="flex items-center gap-2 text-lg">
+   207→            <Calculator className="h-5 w-5 text-emerald-600" />
+   208→            Payroll Calculator
+   209→          </CardTitle>
+   210→          <CardDescription>
+   211→            Enter your salary details to see a complete breakdown of your paycheck
+   212→          </CardDescription>
+   213→        </CardHeader>
+   214→        <CardContent className="space-y-6">
+   215→          {/* Annual Salary */}
+   216→          <div className="space-y-2">
+   217→            <div className="flex items-center justify-between">
+   218→              <Label htmlFor="salary" className="text-sm font-medium">
+   219→                Annual Salary
+   220→              </Label>
+   221→              <span className="text-sm font-semibold text-emerald-700">
+   222→                {fmt(annualSalary)}
+   223→              </span>
+   224→            </div>
+   225→            <Slider
+   226→              value={[annualSalary]}
+   227→              onValueChange={(v) => setAnnualSalary(v[0])}
+   228→              min={10000}
+   229→              max={500000}
+   230→              step={1000}
+   231→              className="w-full"
+   232→            />
+   233→            <div className="flex justify-between text-xs text-muted-foreground">
+   234→              <span>$10,000</span>
+   235→              <span>$500,000</span>
+   236→            </div>
+   237→            <Input
+   238→              id="salary"
+   239→              type="number"
+   240→              value={annualSalary}
+   241→              onChange={(e) => setAnnualSalary(Number(e.target.value) || 0)}
+   242→              className="max-w-[200px]"
+   243→            />
+   244→          </div>
+   245→
+   246→          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+   247→            {/* Pay Frequency */}
+   248→            <div className="space-y-2">
+   249→              <Label className="text-sm font-medium">Pay Frequency</Label>
+   250→              <Select value={payFrequency} onValueChange={setPayFrequency}>
+   251→                <SelectTrigger>
+   252→                  <SelectValue />
+   253→                </SelectTrigger>
+   254→                <SelectContent>
+   255→                  <SelectItem value="weekly">Weekly (52/yr)</SelectItem>
+   256→                  <SelectItem value="biweekly">Bi-weekly (26/yr)</SelectItem>
+   257→                  <SelectItem value="semi_monthly">Semi-monthly (24/yr)</SelectItem>
+   258→                  <SelectItem value="monthly">Monthly (12/yr)</SelectItem>
+   259→                  <SelectItem value="annual">Annual (1/yr)</SelectItem>
+   260→                </SelectContent>
+   261→              </Select>
+   262→            </div>
+   263→
+   264→            {/* Filing Status */}
+   265→            <div className="space-y-2">
+   266→              <Label className="text-sm font-medium">Filing Status</Label>
+   267→              <Select value={filingStatus} onValueChange={setFilingStatus}>
+   268→                <SelectTrigger>
+   269→                  <SelectValue />
+   270→                </SelectTrigger>
+   271→                <SelectContent>
+   272→                  <SelectItem value="single">Single</SelectItem>
+   273→                  <SelectItem value="married">Married Filing Jointly</SelectItem>
+   274→                </SelectContent>
+   275→              </Select>
+   276→            </div>
+   277→
+   278→            {/* State */}
+   279→            <div className="space-y-2">
+   280→              <Label className="text-sm font-medium">State</Label>
+   281→              <Select value={stateCode} onValueChange={setStateCode}>
+   282→                <SelectTrigger>
+   283→                  <SelectValue />
+   284→                </SelectTrigger>
+   285→                <SelectContent>
+   286→                  {states.map((s) => (
+   287→                    <SelectItem key={s.code} value={s.code}>
+   288→                      {s.name} {s.noTax ? "(No Income Tax)" : ""}
+   289→                    </SelectItem>
+   290→                  ))}
+   291→                </SelectContent>
+   292→              </Select>
+   293→            </div>
+   294→          </div>
+   295→
+   296→          <Separator />
+   297→
+   298→          {/* Pre-tax Deductions */}
+   299→          <div>
+   300→            <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+   301→              <TrendingDown className="h-4 w-4 text-amber-600" />
+   302→              Pre-Tax Deductions (Annual)
+   303→              <TooltipProvider>
+   304→                <Tooltip>
+   305→                  <TooltipTrigger>
+   306→                    <Info className="h-3.5 w-3.5 text-muted-foreground" />
+   307→                  </TooltipTrigger>
+   308→                  <TooltipContent className="max-w-xs">
+   309→                    Pre-tax deductions reduce your taxable income, lowering both federal and state taxes.
+   310→                  </TooltipContent>
+   311→                </Tooltip>
+   312→              </TooltipProvider>
+   313→            </h4>
+   314→            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+   315→              <div className="space-y-1">
+   316→                <Label className="text-xs text-muted-foreground">401(k) Contribution</Label>
+   317→                <Input
+   318→                  type="number"
+   319→                  value={preTax401k}
+   320→                  onChange={(e) => setPreTax401k(Number(e.target.value) || 0)}
+   321→                  placeholder="0"
+   322→                />
+   323→              </div>
+   324→              <div className="space-y-1">
+   325→                <Label className="text-xs text-muted-foreground">Health Insurance</Label>
+   326→                <Input
+   327→                  type="number"
+   328→                  value={preTaxHealth}
+   329→                  onChange={(e) => setPreTaxHealth(Number(e.target.value) || 0)}
+   330→                  placeholder="0"
+   331→                />
+   332→              </div>
+   333→              <div className="space-y-1">
+   334→                <Label className="text-xs text-muted-foreground">HSA Contribution</Label>
+   335→                <Input
+   336→                  type="number"
+   337→                  value={preTaxHSA}
+   338→                  onChange={(e) => setPreTaxHSA(Number(e.target.value) || 0)}
+   339→                  placeholder="0"
+   340→                />
+   341→              </div>
+   342→              <div className="space-y-1">
+   343→                <Label className="text-xs text-muted-foreground">Post-Tax Deductions</Label>
+   344→                <Input
+   345→                  type="number"
+   346→                  value={postTaxDeductions}
+   347→                  onChange={(e) => setPostTaxDeductions(Number(e.target.value) || 0)}
+   348→                  placeholder="0"
+   349→                />
+   350→              </div>
+   351→            </div>
+   352→          </div>
+   353→
+   354→          <Button
+   355→            onClick={handleCalculate}
+   356→            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+   357→            size="lg"
+   358→            disabled={isCalculating}
+   359→          >
+   360→            <Calculator className="mr-2 h-4 w-4" />
+   361→            {isCalculating ? "Calculating..." : "Calculate My Paycheck"}
+   362→          </Button>
+   363→        </CardContent>
+   364→      </Card>
+   365→
+   366→      {/* Results */}
+   367→      <AnimatePresence>
+   368→        {result && (
+   369→          <motion.div
+   370→            initial={{ opacity: 0, y: 20 }}
+   371→            animate={{ opacity: 1, y: 0 }}
+   372→            exit={{ opacity: 0, y: -20 }}
+   373→            className="space-y-6"
+   374→          >
+   375→            {/* Summary Cards */}
+   376→            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+   377→              <Card className="border-emerald-200 dark:border-emerald-800">
+   378→                <CardContent className="pt-6">
+   379→                  <div className="text-sm text-muted-foreground">Gross Pay (per period)</div>
+   380→                  <div className="text-2xl font-bold text-emerald-700">{fmt(result.summary.grossPayPerPeriod)}</div>
+   381→                  <div className="text-xs text-muted-foreground mt-1">
+   382→                    {fmt(result.summary.grossPayAnnual)} / year
+   383→                  </div>
+   384→                </CardContent>
+   385→              </Card>
+   386→              <Card className="border-red-200 dark:border-red-800">
+   387→                <CardContent className="pt-6">
+   388→                  <div className="text-sm text-muted-foreground">Total Deductions (per period)</div>
+   389→                  <div className="text-2xl font-bold text-red-600">{fmt(result.summary.totalDeductionsPerPeriod)}</div>
+   390→                  <div className="text-xs text-muted-foreground mt-1">
+   391→                    {result.effectiveRates.total.toFixed(1)}% effective rate
+   392→                  </div>
+   393→                </CardContent>
+   394→              </Card>
+   395→              <Card className="border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/30">
+   396→                <CardContent className="pt-6">
+   397→                  <div className="text-sm text-muted-foreground">Net Pay (per period)</div>
+   398→                  <div className="text-2xl font-bold text-emerald-700">{fmt(result.summary.netPayPerPeriod)}</div>
+   399→                  <div className="text-xs text-muted-foreground mt-1">
+   400→                    {fmt(result.summary.netPayAnnual)} / year
+   401→                  </div>
+   402→                </CardContent>
+   403→              </Card>
+   404→            </div>
+   405→
+   406→            {/* Detailed Breakdown + Chart */}
+   407→            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+   408→              {/* Deduction Breakdown */}
+   409→              <Card>
+   410→                <CardHeader>
+   411→                  <CardTitle className="text-base flex items-center gap-2">
+   412→                    <Receipt className="h-4 w-4" />
+   413→                    Deduction Breakdown
+   414→                  </CardTitle>
+   415→                </CardHeader>
+   416→                <CardContent className="space-y-3">
+   417→                  <DeductionRow
+   418→                    label="Federal Income Tax"
+   419→                    amount={result.federalTax.taxPerPeriod}
+   420→                    annual={result.federalTax.taxAnnual}
+   421→                    rate={result.effectiveRates.federal}
+   422→                    color="text-red-600"
+   423→                  />
+   424→                  <DeductionRow
+   425→                    label="Social Security (OASDI)"
+   426→                    amount={result.fica.socialSecurity.perPeriod}
+   427→                    annual={result.fica.socialSecurity.annual}
+   428→                    rate={result.fica.socialSecurity.rate * 100}
+   429→                    color="text-orange-600"
+   430→                  />
+   431→                  <DeductionRow
+   432→                    label="Medicare"
+   433→                    amount={result.fica.medicare.perPeriod}
+   434→                    annual={result.fica.medicare.annual}
+   435→                    rate={result.fica.medicare.rate * 100}
+   436→                    color="text-orange-600"
+   437→                  />
+   438→                  {result.fica.additionalMedicare.perPeriod > 0 && (
+   439→                    <DeductionRow
+   440→                      label="Additional Medicare"
+   441→                      amount={result.fica.additionalMedicare.perPeriod}
+   442→                      annual={result.fica.additionalMedicare.annual}
+   443→                      rate={result.fica.additionalMedicare.rate * 100}
+   444→                      color="text-orange-600"
+   445→                    />
+   446→                  )}
+   447→                  <DeductionRow
+   448→                    label={`${result.stateTax.stateName} State Tax`}
+   449→                    amount={result.stateTax.taxPerPeriod}
+   450→                    annual={result.stateTax.taxAnnual}
+   451→                    rate={result.effectiveRates.state}
+   452→                    color="text-purple-600"
+   453→                  />
+   454→                  {result.deductions.preTax401kPerPeriod > 0 && (
+   455→                    <DeductionRow
+   456→                      label="401(k)"
+   457→                      amount={result.deductions.preTax401kPerPeriod}
+   458→                      annual={result.deductions.preTax401kPerPeriod * result.numPeriods}
+   459→                      color="text-blue-600"
+   460→                    />
+   461→                  )}
+   462→                  {result.deductions.preTaxHealthInsurancePerPeriod > 0 && (
+   463→                    <DeductionRow
+   464→                      label="Health Insurance"
+   465→                      amount={result.deductions.preTaxHealthInsurancePerPeriod}
+   466→                      annual={result.deductions.preTaxHealthInsurancePerPeriod * result.numPeriods}
+   467→                      color="text-blue-600"
+   468→                    />
+   469→                  )}
+   470→                  {result.deductions.preTaxHSAPerPeriod > 0 && (
+   471→                    <DeductionRow
+   472→                      label="HSA"
+   473→                      amount={result.deductions.preTaxHSAPerPeriod}
+   474→                      annual={result.deductions.preTaxHSAPerPeriod * result.numPeriods}
+   475→                      color="text-blue-600"
+   476→                    />
+   477→                  )}
+   478→                  {result.deductions.postTaxPerPeriod > 0 && (
+   479→                    <DeductionRow
+   480→                      label="Post-Tax Deductions"
+   481→                      amount={result.deductions.postTaxPerPeriod}
+   482→                      annual={result.deductions.postTaxPerPeriod * result.numPeriods}
+   483→                      color="text-gray-600"
+   484→                    />
+   485→                  )}
+   486→                  <Separator />
+   487→                  <div className="flex justify-between items-center font-semibold">
+   488→                    <span>Total Deductions</span>
+   489→                    <span className="text-red-600">{fmt(result.summary.totalDeductionsPerPeriod)}</span>
+   490→                  </div>
+   491→                  <div className="flex justify-between items-center text-lg font-bold">
+   492→                    <span>Net Pay</span>
+   493→                    <span className="text-emerald-700">{fmt(result.summary.netPayPerPeriod)}</span>
+   494→                  </div>
+   495→                </CardContent>
+   496→              </Card>
+   497→
+   498→              {/* Pie Chart */}
+   499→              <Card>
+   500→                <CardHeader>
+   501→                  <CardTitle className="text-base flex items-center gap-2">
+   502→                    <PieChart className="h-4 w-4" />
+   503→                    Where Your Money Goes
+   504→                  </CardTitle>
+   505→                </CardHeader>
+   506→                <CardContent>
+   507→                  <div className="h-[280px]">
+   508→                    <ResponsiveContainer width="100%" height="100%">
+   509→                      <RechartsPie>
+   510→                        <Pie
+   511→                          data={pieData}
+   512→                          cx="50%"
+   513→                          cy="50%"
+   514→                          innerRadius={60}
+   515→                          outerRadius={100}
+   516→                          paddingAngle={2}
+   517→                          dataKey="value"
+   518→                        >
+   519→                          {pieData.map((_, index) => (
+   520→                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+   521→                          ))}
+   522→                        </Pie>
+   523→                        <RechartsTooltip
+   524→                          formatter={(value: number) => fmt(value)}
+   525→                        />
+   526→                      </RechartsPie>
+   527→                    </ResponsiveContainer>
+   528→                  </div>
+   529→                  <div className="grid grid-cols-2 gap-2 mt-2">
+   530→                    {pieData.map((entry, index) => (
+   531→                      <div key={entry.name} className="flex items-center gap-2 text-xs">
+   532→                        <div
+   533→                          className="h-3 w-3 rounded-full flex-shrink-0"
+   534→                          style={{ backgroundColor: COLORS[index % COLORS.length] }}
+   535→                        />
+   536→                        <span className="truncate">{entry.name}</span>
+   537→                      </div>
+   538→                    ))}
+   539→                    <div className="flex items-center gap-2 text-xs font-semibold">
+   540→                      <div className="h-3 w-3 rounded-full flex-shrink-0 bg-emerald-500" />
+   541→                      <span>Net Pay (Take-Home)</span>
+   542→                    </div>
+   543→                  </div>
+   544→                </CardContent>
+   545→              </Card>
+   546→            </div>
+   547→
+   548→            {/* Tax Bracket Breakdown */}
+   549→            <Card>
+   550→              <CardHeader>
+   551→                <div className="flex items-center justify-between">
+   552→                  <div>
+   553→                    <CardTitle className="text-base flex items-center gap-2">
+   554→                      <DollarSign className="h-4 w-4" />
+   555→                      Federal Tax Bracket Breakdown
+   556→                    </CardTitle>
+   557→                    <CardDescription className="mt-1">
+   558→                      Taxable Income: <strong>{fmt(result.federalTax.taxableIncome)}</strong> (after ${fmt(result.federalTax.standardDeduction)} standard deduction)
+   559→                      {" | "}
+   560→                      Marginal Rate: <Badge variant="outline">{result.federalTax.marginalRate}%</Badge>
+   561→                      {" | "}
+   562→                      Effective Rate: <Badge variant="secondary">{result.effectiveRates.federal.toFixed(2)}%</Badge>
+   563→                    </CardDescription>
+   564→                  </div>
+   565→                  <Button
+   566→                    variant="ghost"
+   567→                    size="sm"
+   568→                    onClick={() => setShowBracketDetail(!showBracketDetail)}
+   569→                  >
+   570→                    {showBracketDetail ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+   571→                  </Button>
+   572→                </div>
+   573→              </CardHeader>
+   574→              {showBracketDetail && (
+   575→                <CardContent>
+   576→                  <div className="overflow-x-auto">
+   577→                    <table className="w-full text-sm">
+   578→                      <thead>
+   579→                        <tr className="border-b">
+   580→                          <th className="text-left py-2 pr-4">Rate</th>
+   581→                          <th className="text-right py-2 pr-4">Income in Bracket</th>
+   582→                          <th className="text-right py-2">Tax in Bracket</th>
+   583→                        </tr>
+   584→                      </thead>
+   585→                      <tbody>
+   586→                        {result.federalTax.brackets.map((b, i) => (
+   587→                          <tr
+   588→                            key={i}
+   589→                            className={
+   590→                              b.taxableAmount > 0
+   591→                                ? "bg-emerald-50 dark:bg-emerald-950/30 font-medium"
+   592→                                : "text-muted-foreground"
+   593→                            }
+   594→                          >
+   595→                            <td className="py-2 pr-4">
+   596→                              <Badge variant={b.taxableAmount > 0 ? "default" : "outline"}>
+   597→                                {b.rate}%
+   598→                              </Badge>
+   599→                            </td>
+   600→                            <td className="text-right py-2 pr-4">
+   601→                              {b.taxableAmount > 0 ? fmt(b.taxableAmount) : "—"}
+   602→                            </td>
+   603→                            <td className="text-right py-2 text-red-600">
+   604→                              {b.taxableAmount > 0 ? fmt(b.taxAmount) : "—"}
+   605→                            </td>
+   606→                          </tr>
+   607→                        ))}
+   608→                        <tr className="border-t font-bold">
+   609→                          <td className="py-2 pr-4" colSpan={2}>
+   610→                            Total Federal Tax
+   611→                          </td>
+   612→                          <td className="text-right py-2 text-red-600">
+   613→                            {fmt(result.federalTax.taxAnnual)}
+   614→                          </td>
+   615→                        </tr>
+   616→                      </tbody>
+   617→                    </table>
+   618→                  </div>
+   619→                </CardContent>
+   620→              )}
+   621→            </Card>
+   622→
+   623→            {/* FICA Details */}
+   624→            <Card>
+   625→              <CardHeader>
+   626→                <CardTitle className="text-base">FICA Tax Details</CardTitle>
+   627→              </CardHeader>
+   628→              <CardContent>
+   629→                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+   630→                  <div className="p-3 rounded-lg bg-orange-50 dark:bg-orange-950/30">
+   631→                    <div className="text-xs text-muted-foreground">Social Security</div>
+   632→                    <div className="text-lg font-bold">{fmt(result.fica.socialSecurity.annual)}/yr</div>
+   633→                    <div className="text-xs text-muted-foreground">
+   634→                      {result.fica.socialSecurity.rate * 100}% up to {fmt(result.fica.socialSecurity.wageBase)}
+   635→                    </div>
+   636→                  </div>
+   637→                  <div className="p-3 rounded-lg bg-orange-50 dark:bg-orange-950/30">
+   638→                    <div className="text-xs text-muted-foreground">Medicare</div>
+   639→                    <div className="text-lg font-bold">{fmt(result.fica.medicare.annual)}/yr</div>
+   640→                    <div className="text-xs text-muted-foreground">
+   641→                      {result.fica.medicare.rate * 100}% (no cap)
+   642→                    </div>
+   643→                  </div>
+   644→                  <div className="p-3 rounded-lg bg-orange-50 dark:bg-orange-950/30">
+   645→                    <div className="text-xs text-muted-foreground">Total FICA</div>
+   646→                    <div className="text-lg font-bold">{fmt(result.fica.totalAnnual)}/yr</div>
+   647→                    <div className="text-xs text-muted-foreground">
+   648→                      {result.effectiveRates.fica.toFixed(2)}% effective rate
+   649→                    </div>
+   650→                  </div>
+   651→                </div>
+   652→              </CardContent>
+   653→            </Card>
+   654→          </motion.div>
+   655→        )}
+   656→      </AnimatePresence>
+   657→    </div>
+   658→  );
+   659→}
+   660→
+   661→function DeductionRow({
+   662→  label,
+   663→  amount,
+   664→  annual,
+   665→  rate,
+   666→  color,
+   667→}: {
+   668→  label: string;
+   669→  amount: number;
+   670→  annual?: number;
+   671→  rate?: number;
+   672→  color: string;
+   673→}) {
+   674→  return (
+   675→    <div className="flex justify-between items-center">
+   676→      <div className="flex items-center gap-2">
+   677→        <span className="text-sm">{label}</span>
+   678→        {rate !== undefined && (
+   679→          <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+   680→            {rate.toFixed(2)}%
+   681→          </Badge>
+   682→        )}
+   683→      </div>
+   684→      <div className="text-right">
+   685→        <div className={`text-sm font-medium ${color}`}>{fmt(amount)}</div>
+   686→        {annual !== undefined && (
+   687→          <div className="text-[10px] text-muted-foreground">{fmt(annual)}/yr</div>
+   688→        )}
+   689→      </div>
+   690→    </div>
+   691→  );
+   692→}

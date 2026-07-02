@@ -224,7 +224,7 @@ export function calculatePayroll(input: CalcInput): CalcResult {
     bracketBreakdown: getBracketBreakdown(federalTaxableIncome, input.filingStatus),
     ssAnnual, ssPerPeriod: ssAnnual / numPeriods,
     medicareAnnual: medAnnual, medicarePerPeriod: medAnnual / numPeriods,
-    addlMedicareAnnual, addlMedicarePerPeriod: addlMedAnnual / numPeriods,
+    addlMedicareAnnual: addlMedAnnual, addlMedicarePerPeriod: addlMedAnnual / numPeriods,
     ficaTotalAnnual: ficaAnnual, ficaTotalPerPeriod: ficaAnnual / numPeriods,
     ficaEffectiveRate: (ficaAnnual / input.annualSalary) * 100,
     stateTaxAnnual, stateTaxPerPeriod: stateTaxAnnual / numPeriods,

@@ -1,0 +1,1417 @@
+     1→"use client";
+     2→
+     3→import { useState, useEffect, useRef } from "react";
+     4→import { motion } from "framer-motion";
+     5→import {
+     6→  Card,
+     7→  CardContent,
+     8→  CardDescription,
+     9→  CardHeader,
+    10→  CardTitle,
+    11→} from "@/components/ui/card";
+    12→import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+    13→import { Badge } from "@/components/ui/badge";
+    14→import { Separator } from "@/components/ui/separator";
+    15→import {
+    16→  Accordion,
+    17→  AccordionContent,
+    18→  AccordionItem,
+    19→  AccordionTrigger,
+    20→} from "@/components/ui/accordion";
+    21→import {
+    22→  Table,
+    23→  TableBody,
+    24→  TableCell,
+    25→  TableHead,
+    26→  TableHeader,
+    27→  TableRow,
+    28→} from "@/components/ui/table";
+    29→import {
+    30→  DollarSign,
+    31→  Receipt,
+    32→  Building2,
+    33→  FileText,
+    34→  Calculator,
+    35→  GraduationCap,
+    36→  BookOpen,
+    37→  ArrowRight,
+    38→  Lightbulb,
+    39→  AlertTriangle,
+    40→  CheckCircle2,
+    41→  TrendingUp,
+    42→  Shield,
+    43→  Users,
+    44→  MapPin,
+    45→  ChevronRight,
+    46→  Banknote,
+    47→  Landmark,
+    48→  Briefcase,
+    49→  Clock,
+    50→  TrendingDown,
+    51→  Calendar,
+    52→  Scale,
+    53→} from "lucide-react";
+    54→import PayrollCalculator from "@/components/payroll/payroll-calculator";
+    55→import PayStubView from "@/components/payroll/pay-stub-view";
+    56→import ScenariosSection from "@/components/payroll/scenarios-section";
+    57→import TaxationSection from "@/components/payroll/taxation-section";
+    58→import GlossarySection from "@/components/payroll/glossary-section";
+    59→import {
+    60→  BarChart,
+    61→  Bar,
+    62→  XAxis,
+    63→  YAxis,
+    64→  CartesianGrid,
+    65→  Tooltip as RTooltip,
+    66→  ResponsiveContainer,
+    67→} from "recharts";
+    68→
+    69→const REF_DATA = {
+    70→  federalBracketsSingle: [
+    71→    { min: 0, max: 11600, rate: 10 },
+    72→    { min: 11600, max: 47150, rate: 12 },
+    73→    { min: 47150, max: 100525, rate: 22 },
+    74→    { min: 100525, max: 191950, rate: 24 },
+    75→    { min: 191950, max: 243725, rate: 32 },
+    76→    { min: 243725, max: 609350, rate: 35 },
+    77→    { min: 609350, max: null, rate: 37 },
+    78→  ],
+    79→  federalBracketsMarried: [
+    80→    { min: 0, max: 23200, rate: 10 },
+    81→    { min: 23200, max: 94300, rate: 12 },
+    82→    { min: 94300, max: 201050, rate: 22 },
+    83→    { min: 201050, max: 383900, rate: 24 },
+    84→    { min: 383900, max: 487450, rate: 32 },
+    85→    { min: 487450, max: 731200, rate: 35 },
+    86→    { min: 731200, max: null, rate: 37 },
+    87→  ],
+    88→  standardDeductions: { single: 14600, married: 29200, head_of_household: 21900 } as Record<string, number>,
+    89→  states: [
+    90→    { code: "TX", name: "Texas", hasIncomeTax: false, flatTax: true, topRate: 0 },
+    91→    { code: "FL", name: "Florida", hasIncomeTax: false, flatTax: true, topRate: 0 },
+    92→    { code: "WA", name: "Washington", hasIncomeTax: false, flatTax: true, topRate: 0 },
+    93→    { code: "NV", name: "Nevada", hasIncomeTax: false, flatTax: true, topRate: 0 },
+    94→    { code: "WY", name: "Wyoming", hasIncomeTax: false, flatTax: true, topRate: 0 },
+    95→    { code: "AK", name: "Alaska", hasIncomeTax: false, flatTax: true, topRate: 0 },
+    96→    { code: "SD", name: "South Dakota", hasIncomeTax: false, flatTax: true, topRate: 0 },
+    97→    { code: "TN", name: "Tennessee", hasIncomeTax: false, flatTax: true, topRate: 0 },
+    98→    { code: "NH", name: "New Hampshire", hasIncomeTax: false, flatTax: true, topRate: 0 },
+    99→    { code: "IL", name: "Illinois", hasIncomeTax: true, flatTax: true, topRate: 4.95 },
+   100→    { code: "IN", name: "Indiana", hasIncomeTax: true, flatTax: true, topRate: 3.05 },
+   101→    { code: "PA", name: "Pennsylvania", hasIncomeTax: true, flatTax: true, topRate: 3.07 },
+   102→    { code: "MI", name: "Michigan", hasIncomeTax: true, flatTax: true, topRate: 4.25 },
+   103→    { code: "CO", name: "Colorado", hasIncomeTax: true, flatTax: true, topRate: 4.4 },
+   104→    { code: "NC", name: "North Carolina", hasIncomeTax: true, flatTax: true, topRate: 4.5 },
+   105→    { code: "AZ", name: "Arizona", hasIncomeTax: true, flatTax: true, topRate: 2.5 },
+   106→    { code: "GA", name: "Georgia", hasIncomeTax: true, flatTax: true, topRate: 5.49 },
+   107→    { code: "MA", name: "Massachusetts", hasIncomeTax: true, flatTax: true, topRate: 5 },
+   108→    { code: "CA", name: "California", hasIncomeTax: true, flatTax: false, topRate: 12.3 },
+   109→    { code: "NY", name: "New York", hasIncomeTax: true, flatTax: false, topRate: 10.9 },
+   110→    { code: "NJ", name: "New Jersey", hasIncomeTax: true, flatTax: false, topRate: 10.75 },
+   111→    { code: "OR", name: "Oregon", hasIncomeTax: true, flatTax: false, topRate: 9.9 },
+   112→    { code: "HI", name: "Hawaii", hasIncomeTax: true, flatTax: false, topRate: 11 },
+   113→    { code: "CT", name: "Connecticut", hasIncomeTax: true, flatTax: false, topRate: 6.99 },
+   114→    { code: "OH", name: "Ohio", hasIncomeTax: true, flatTax: false, topRate: 3.99 },
+   115→    { code: "VA", name: "Virginia", hasIncomeTax: true, flatTax: false, topRate: 5.75 },
+   116→    { code: "MD", name: "Maryland", hasIncomeTax: true, flatTax: false, topRate: 5.75 },
+   117→    { code: "MN", name: "Minnesota", hasIncomeTax: true, flatTax: false, topRate: 9.85 },
+   118→  ],
+   119→};
+   120→
+   121→const fmt = (n: number) =>
+   122→  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2 }).format(n);
+   123→
+   124→const fadeIn = {
+   125→  initial: { opacity: 0, y: 16 },
+   126→  animate: { opacity: 1, y: 0 },
+   127→  transition: { duration: 0.35 },
+   128→};
+   129→
+   130→export default function HomePage() {
+   131→  const [activeTab, setActiveTab] = useState("fundamentals");
+   132→  const [payStubResult, setPayStubResult] = useState<Record<string, unknown> | null>(null);
+   133→
+   134→  const refData = REF_DATA;
+   135→
+   136→  // Pay stub is shown with a pre-computed example (fetched lazily when tab is active)
+   137→  const payStubFetchedRef = useRef(false);
+   138→
+   139→  useEffect(() => {
+   140→    if (activeTab === "paystub" && !payStubFetchedRef.current && !payStubResult) {
+   141→      payStubFetchedRef.current = true;
+   142→      fetch("/api/payroll/calculate", {
+   143→        method: "POST",
+   144→        headers: { "Content-Type": "application/json" },
+   145→        body: JSON.stringify({
+   146→          annualSalary: 85000,
+   147→          payFrequency: "biweekly",
+   148→          filingStatus: "single",
+   149→          stateCode: "CA",
+   150→          preTax401k: 4000,
+   151→          preTaxHealthInsurance: 2400,
+   152→          preTaxHSA: 0,
+   153→          otherPreTax: 0,
+   154→          postTaxDeductions: 0,
+   155→        }),
+   156→      })
+   157→        .then((r) => r.json())
+   158→        .then(setPayStubResult)
+   159→        .catch(() => {});
+   160→    }
+   161→  }, [activeTab, payStubResult]);
+   162→
+   163→  const tabs = [
+   164→    { id: "fundamentals", label: "Fundamentals", icon: BookOpen },
+   165→    { id: "federal", label: "Federal Tax", icon: Landmark },
+   166→    { id: "taxation", label: "Taxation", icon: Scale },
+   167→    { id: "fica", label: "FICA", icon: Shield },
+   168→    { id: "state", label: "State Tax", icon: MapPin },
+   169→    { id: "calculator", label: "Calculator", icon: Calculator },
+   170→    { id: "paystub", label: "Pay Stub", icon: Receipt },
+   171→    { id: "scenarios", label: "Scenarios", icon: Users },
+   172→    { id: "glossary", label: "Glossary", icon: BookOpen },
+   173→    { id: "forms", label: "Forms", icon: FileText },
+   174→  ];
+   175→
+   176→  return (
+   177→    <div className="min-h-screen flex flex-col">
+   178→      {/* Hero */}
+   179→      <header className="relative bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-800 text-white overflow-hidden">
+   180→        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(255,255,255,0.08),transparent_50%)]" />
+   181→        <div className="max-w-6xl mx-auto px-4 py-12 sm:py-16 relative z-10">
+   182→          <motion.div
+   183→            initial={{ opacity: 0, y: -20 }}
+   184→            animate={{ opacity: 1, y: 0 }}
+   185→            transition={{ duration: 0.5 }}
+   186→          >
+   187→            <div className="flex items-center gap-3 mb-4">
+   188→              <div className="p-2.5 bg-white/15 rounded-xl backdrop-blur-sm">
+   189→                <GraduationCap className="h-8 w-8" />
+   190→              </div>
+   191→              <Badge variant="secondary" className="bg-white/20 text-white border-0 text-xs">
+   192→                2024 Tax Year
+   193→              </Badge>
+   194→            </div>
+   195→            <h1 className="text-3xl sm:text-5xl font-bold tracking-tight mb-3">
+   196→              Master USA Payroll
+   197→              <span className="block text-emerald-200 text-2xl sm:text-3xl font-normal mt-1">& Taxation</span>
+   198→            </h1>
+   199→            <p className="text-base sm:text-lg text-emerald-100 max-w-2xl mb-6">
+   200→              A comprehensive, interactive guide to understanding American payroll and taxes — from gross pay to net pay, 
+   201→              capital gains to tax credits, with real-world examples, calculators, and visual breakdowns.
+   202→            </p>
+   203→            <div className="flex flex-wrap gap-2 sm:gap-3 mb-8">
+   204→              <Badge className="bg-white/20 text-white border-0 py-1.5 px-3">
+   205→                <DollarSign className="mr-1.5 h-3.5 w-3.5" /> Tax Brackets
+   206→              </Badge>
+   207→              <Badge className="bg-white/20 text-white border-0 py-1.5 px-3">
+   208→                <Calculator className="mr-1.5 h-3.5 w-3.5" /> Interactive Calculator
+   209→              </Badge>
+   210→              <Badge className="bg-white/20 text-white border-0 py-1.5 px-3">
+   211→                <Receipt className="mr-1.5 h-3.5 w-3.5" /> Pay Stub Analysis
+   212→              </Badge>
+   213→              <Badge className="bg-white/20 text-white border-0 py-1.5 px-3">
+   214→                <MapPin className="mr-1.5 h-3.5 w-3.5" /> 28 State Tax Rates
+   215→              </Badge>
+   216→              <Badge className="bg-white/20 text-white border-0 py-1.5 px-3">
+   217→                <TrendingUp className="mr-1.5 h-3.5 w-3.5" /> Capital Gains
+   218→              </Badge>
+   219→              <Badge className="bg-white/20 text-white border-0 py-1.5 px-3">
+   220→                <Lightbulb className="mr-1.5 h-3.5 w-3.5" /> 45+ Term Glossary
+   221→              </Badge>
+   222→            </div>
+   223→            {/* Stats Bar */}
+   224→            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+   225→              <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
+   226→                <div className="text-2xl sm:text-3xl font-bold">10</div>
+   227→                <div className="text-xs text-emerald-200">Learning Sections</div>
+   228→              </div>
+   229→              <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
+   230→                <div className="text-2xl sm:text-3xl font-bold">7</div>
+   231→                <div className="text-xs text-emerald-200">Federal Tax Brackets</div>
+   232→              </div>
+   233→              <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
+   234→                <div className="text-2xl sm:text-3xl font-bold">28</div>
+   235→                <div className="text-xs text-emerald-200">States Covered</div>
+   236→              </div>
+   237→              <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
+   238→                <div className="text-2xl sm:text-3xl font-bold">6</div>
+   239→                <div className="text-xs text-emerald-200">Real-World Scenarios</div>
+   240→              </div>
+   241→            </div>
+   242→          </motion.div>
+   243→        </div>
+   244→      </header>
+   245→
+   246→      {/* Main Content */}
+   247→      <main className="flex-1 max-w-6xl mx-auto w-full px-4 py-8">
+   248→        <Tabs value={activeTab} onValueChange={setActiveTab}>
+   249→          {/* Navigation */}
+   250→          <div className="mb-8 overflow-x-auto -mx-4 px-4">
+   251→            <TabsList className="inline-flex h-auto gap-1 bg-muted/80 p-1.5 flex-wrap">
+   252→              {tabs.map((tab) => (
+   253→                <TabsTrigger
+   254→                  key={tab.id}
+   255→                  value={tab.id}
+   256→                  className="flex items-center gap-2 data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-xs sm:text-sm px-3 py-2"
+   257→                >
+   258→                  <tab.icon className="h-3.5 w-3.5" />
+   259→                  <span className="hidden sm:inline">{tab.label}</span>
+   260→                </TabsTrigger>
+   261→              ))}
+   262→            </TabsList>
+   263→          </div>
+   264→
+   265→          {/* ===== FUNDAMENTALS ===== */}
+   266→          <TabsContent value="fundamentals">
+   267→            <motion.div {...fadeIn} className="space-y-6">
+   268→              {/* What is Payroll */}
+   269→              <Card>
+   270→                <CardHeader>
+   271→                  <CardTitle className="flex items-center gap-2">
+   272→                    <Briefcase className="h-5 w-5 text-emerald-600" />
+   273→                    What is Payroll?
+   274→                  </CardTitle>
+   275→                </CardHeader>
+   276→                <CardContent className="prose prose-sm max-w-none dark:prose-invert space-y-4">
+   277→                  <p className="text-muted-foreground leading-relaxed">
+   278→                    <strong>Payroll</strong> is the process by which employers pay employees for their work.
+   279→                    It encompasses calculating earnings, withholding the correct amounts for taxes and benefits,
+   280→                    and distributing the net pay to employees. In the United States, payroll is a complex system
+   281→                    governed by federal, state, and local regulations.
+   282→                  </p>
+   283→                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-4">
+   284→                    <InfoCard
+   285→                      icon={DollarSign}
+   286→                      title="Gross Pay"
+   287→                      description="Total earnings before any deductions — base salary, overtime, bonuses, commissions."
+   288→                      color="emerald"
+   289→                    />
+   290→                    <InfoCard
+   291→                      icon={TrendingDown}
+   292→                      title="Deductions"
+   293→                      description="Amounts subtracted from gross pay: federal/state taxes, FICA, insurance, retirement contributions."
+   294→                      color="red"
+   295→                    />
+   296→                    <InfoCard
+   297→                      icon={Banknote}
+   298→                      title="Net Pay"
+   299→                      description="The 'take-home pay' — what actually lands in your bank account after all deductions."
+   300→                      color="emerald"
+   301→                    />
+   302→                  </div>
+   303→                  <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-lg p-4">
+   304→                    <div className="flex items-start gap-2">
+   305→                      <Lightbulb className="h-5 w-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+   306→                      <div>
+   307→                        <strong className="text-emerald-800 dark:text-emerald-200">Key Formula:</strong>
+   308→                        <div className="mt-1 font-mono bg-white dark:bg-gray-900 rounded px-3 py-2 text-sm inline-block">
+   309→                          Net Pay = Gross Pay − (Federal Tax + State Tax + FICA + Pre-tax Deductions + Post-tax Deductions)
+   310→                        </div>
+   311→                      </div>
+   312→                    </div>
+   313→                  </div>
+   314→                </CardContent>
+   315→              </Card>
+   316→
+   317→              {/* Pay Periods */}
+   318→              <Card>
+   319→                <CardHeader>
+   320→                  <CardTitle className="flex items-center gap-2">
+   321→                    <Calendar className="h-5 w-5 text-emerald-600" />
+   322→                    Pay Periods in the USA
+   323→                  </CardTitle>
+   324→                  <CardDescription>
+   325→                    How often you get paid affects your per-check amount but not your annual total
+   326→                  </CardDescription>
+   327→                </CardHeader>
+   328→                <CardContent>
+   329→                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+   330→                    {[
+   331→                      { freq: "Weekly", periods: 52, example: "$80,000 ÷ 52 = $1,538.46" },
+   332→                      { freq: "Bi-Weekly", periods: 26, example: "$80,000 ÷ 26 = $3,076.92" },
+   333→                      { freq: "Semi-Monthly", periods: 24, example: "$80,000 ÷ 24 = $3,333.33" },
+   334→                      { freq: "Monthly", periods: 12, example: "$80,000 ÷ 12 = $6,666.67" },
+   335→                    ].map((p) => (
+   336→                      <Card key={p.freq} className="border">
+   337→                        <CardContent className="pt-4">
+   338→                          <div className="text-sm font-semibold text-emerald-700">{p.freq}</div>
+   339→                          <div className="text-2xl font-bold mt-1">{p.periods}</div>
+   340→                          <div className="text-xs text-muted-foreground">checks per year</div>
+   341→                          <Separator className="my-2" />
+   342→                          <div className="text-xs font-mono text-muted-foreground">{p.example}</div>
+   343→                        </CardContent>
+   344→                      </Card>
+   345→                    ))}
+   346→                  </div>
+   347→                  <div className="mt-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-3 text-sm">
+   348→                    <div className="flex items-start gap-2">
+   349→                      <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+   350→                      <span>
+   351→                        <strong>Bi-Weekly vs Semi-Monthly:</strong> Bi-weekly (every 2 weeks = 26 checks) is
+   352→                        different from semi-monthly (twice a month on specific dates = 24 checks). With bi-weekly,
+   353→                        you get 2 &quot;extra&quot; paychecks in 2 months of the year.
+   354→                      </span>
+   355→                    </div>
+   356→                  </div>
+   357→                </CardContent>
+   358→              </Card>
+   359→
+   360→              {/* Types of Earnings */}
+   361→              <Card>
+   362→                <CardHeader>
+   363→                  <CardTitle className="flex items-center gap-2">
+   364→                    <DollarSign className="h-5 w-5 text-emerald-600" />
+   365→                    Types of Earnings
+   366→                  </CardTitle>
+   367→                </CardHeader>
+   368→                <CardContent>
+   369→                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+   370→                    <EarningCard
+   371→                      title="Salary (Exempt)"
+   372→                      description="Fixed annual amount divided by pay periods. Not eligible for overtime under FLSA. Common for professional, managerial, and administrative roles."
+   373→                      example="$85,000/year → $3,269.23/bi-weekly"
+   374→                    />
+   375→                    <EarningCard
+   376→                      title="Hourly (Non-Exempt)"
+   377→                      description="Paid by the hour with overtime at 1.5x for hours over 40/week. Protected by the Fair Labor Standards Act (FLSA)."
+   378→                      example="$40/hr × 40hrs = $1,600/week (OT: $60/hr)"
+   379→                    />
+   380→                    <EarningCard
+   381→                      title="Commission"
+   382→                      description="Percentage of sales revenue. May be combined with base salary. Taxed as ordinary income, but employers may withhold at a flat 22% supplemental rate."
+   383→                      example="3% of $50,000 in sales = $1,500 commission"
+   384→                    />
+   385→                    <EarningCard
+   386→                      title="Bonuses"
+   387→                      description="Discretionary or performance-based payments. Can be taxed at flat 22% supplemental rate (under $1M) or at 37% (over $1M)."
+   388→                      example="$5,000 bonus → 22% withheld = $3,900 net"
+   389→                    />
+   390→                  </div>
+   391→                </CardContent>
+   392→              </Card>
+   393→
+   394→              {/* Pre-tax vs Post-tax */}
+   395→              <Card>
+   396→                <CardHeader>
+   397→                  <CardTitle className="flex items-center gap-2">
+   398→                    <TrendingDown className="h-5 w-5 text-emerald-600" />
+   399→                    Pre-Tax vs Post-Tax Deductions
+   400→                  </CardTitle>
+   401→                  <CardDescription>
+   402→                    Understanding the order of deductions is crucial for accurate payroll
+   403→                  </CardDescription>
+   404→                </CardHeader>
+   405→                <CardContent>
+   406→                  <div className="space-y-4">
+   407→                    <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-lg p-4">
+   408→                      <h4 className="font-semibold text-emerald-800 dark:text-emerald-200 flex items-center gap-2 mb-2">
+   409→                        <CheckCircle2 className="h-4 w-4" /> Step 1: Pre-Tax Deductions (reduce taxable income)
+   410→                      </h4>
+   411→                      <p className="text-sm text-muted-foreground mb-3">
+   412→                        These are subtracted <strong>before</strong> taxes are calculated, lowering your overall tax burden.
+   413→                      </p>
+   414→                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+   415→                        <DeductionItem name="401(k) Contributions" limit="$23,000 (2024), $30,500 if 50+" />
+   416→                        <DeductionItem name="Health Insurance Premiums" limit="No federal limit" />
+   417→                        <DeductionItem name="HSA Contributions" limit="$4,150 individual / $8,300 family" />
+   418→                        <DeductionItem name="FSA Contributions" limit="$3,200 (2024)" />
+   419→                        <DeductionItem name="Commuter Benefits" limit="$315 transit + $315 parking" />
+   420→                        <DeductionItem name="Section 125 Cafeteria Plan" limit="Varies by plan" />
+   421→                      </div>
+   422→                    </div>
+   423→
+   424→                    <ArrowRight className="h-6 w-6 text-muted-foreground mx-auto" />
+   425→
+   426→                    <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+   427→                      <h4 className="font-semibold text-amber-800 dark:text-amber-200 flex items-center gap-2 mb-2">
+   428→                        <Landmark className="h-4 w-4" /> Step 2: Tax Withholdings (federal, state, FICA)
+   429→                      </h4>
+   430→                      <p className="text-sm text-muted-foreground">
+   431→                        Taxes are calculated on the remaining income after pre-tax deductions. See the Federal Tax and FICA tabs for details.
+   432→                      </p>
+   433→                    </div>
+   434→
+   435→                    <ArrowRight className="h-6 w-6 text-muted-foreground mx-auto" />
+   436→
+   437→                    <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+   438→                      <h4 className="font-semibold flex items-center gap-2 mb-2">
+   439→                        <Receipt className="h-4 w-4" /> Step 3: Post-Tax Deductions (after taxes)
+   440→                      </h4>
+   441→                      <p className="text-sm text-muted-foreground mb-3">
+   442→                        These are subtracted <strong>after</strong> all taxes. They don&apos;t reduce your tax burden.
+   443→                      </p>
+   444→                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+   445→                        <DeductionItem name="Roth 401(k)" limit="Same as traditional 401(k)" />
+   446→                        <DeductionItem name="Roth IRA" limit="$7,000 (2024), $8,000 if 50+" />
+   447→                        <DeductionItem name="Wage Garnishments" limit="Per court order" />
+   448→                        <DeductionItem name="Union Dues" limit="Varies by agreement" />
+   449→                        <DeductionItem name="Charitable Donations" limit="No payroll limit" />
+   450→                      </div>
+   451→                    </div>
+   452→
+   453→                    <ArrowRight className="h-6 w-6 text-muted-foreground mx-auto" />
+   454→
+   455→                    <div className="bg-emerald-100 dark:bg-emerald-900/40 border-2 border-emerald-300 dark:border-emerald-700 rounded-lg p-4 text-center">
+   456→                      <Banknote className="h-6 w-6 text-emerald-700 mx-auto mb-2" />
+   457→                      <div className="text-lg font-bold text-emerald-800 dark:text-emerald-200">= Net Pay (Take-Home)</div>
+   458→                      <div className="text-sm text-muted-foreground">Deposited to your bank account via direct deposit</div>
+   459→                    </div>
+   460→                  </div>
+   461→                </CardContent>
+   462→              </Card>
+   463→            </motion.div>
+   464→          </TabsContent>
+   465→
+   466→          {/* ===== FEDERAL TAX ===== */}
+   467→          <TabsContent value="federal">
+   468→            <motion.div {...fadeIn} className="space-y-6">
+   469→              <Card>
+   470→                <CardHeader>
+   471→                  <CardTitle className="flex items-center gap-2">
+   472→                    <Landmark className="h-5 w-5 text-emerald-600" />
+   473→                    Federal Income Tax — How It Works
+   474→                  </CardTitle>
+   475→                  <CardDescription>
+   476→                    The US uses a <strong>progressive tax system</strong> — higher income is taxed at higher rates, but only on the amount within each bracket.
+   477→                  </CardDescription>
+   478→                </CardHeader>
+   479→                <CardContent className="space-y-6">
+   480→                  {/* Progressive Tax Explained */}
+   481→                  <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-lg p-4">
+   482→                    <div className="flex items-start gap-2">
+   483→                      <Lightbulb className="h-5 w-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+   484→                      <div className="text-sm space-y-2">
+   485→                        <p>
+   486→                          <strong>Key Concept: Progressive Tax Brackets</strong> — Your income is not taxed at a single flat rate.
+   487→                          Instead, it&apos;s divided into portions (&quot;brackets&quot;), and each portion is taxed at its own rate.
+   488→                        </p>
+   489→                        <p>
+   490→                          <strong>Example:</strong> If you earn $60,000 (single filer), only the amount <em>above</em> $47,150 is taxed at 22%.
+   491→                          The first $11,600 is taxed at 10%, and $11,601–$47,150 at 12%.
+   492→                        </p>
+   493→                      </div>
+   494→                    </div>
+   495→                  </div>
+   496→
+   497→                  {/* Standard Deduction */}
+   498→                  <div>
+   499→                    <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+   500→                      <FileText className="h-5 w-5 text-emerald-600" />
+   501→                      Standard Deduction (2024)
+   502→                    </h3>
+   503→                    <p className="text-sm text-muted-foreground mb-3">
+   504→                      The standard deduction reduces your taxable income. Most employees use this instead of itemizing deductions.
+   505→                    </p>
+   506→                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+   507→                      {refData?.standardDeductions &&
+   508→                        Object.entries(refData.standardDeductions).map(([key, val]) => (
+   509→                          <Card key={key} className="border-2 border-emerald-100 dark:border-emerald-900">
+   510→                            <CardContent className="pt-4 text-center">
+   511→                              <div className="text-sm text-muted-foreground capitalize">
+   512→                                {key.replace("_", " ")}
+   513→                              </div>
+   514→                              <div className="text-2xl font-bold text-emerald-700">{fmt(val)}</div>
+   515→                            </CardContent>
+   516→                          </Card>
+   517→                        ))}
+   518→                    </div>
+   519→                  </div>
+   520→
+   521→                  {/* Tax Brackets Table */}
+   522→                  <div>
+   523→                    <h3 className="text-lg font-semibold mb-3">2024 Federal Tax Brackets</h3>
+   524→                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+   525→                      <div>
+   526→                        <h4 className="text-sm font-semibold text-center mb-2">Single Filers</h4>
+   527→                        <div className="rounded-lg border overflow-hidden">
+   528→                          <Table>
+   529→                            <TableHeader>
+   530→                              <TableRow className="bg-muted/50">
+   531→                                <TableHead>Rate</TableHead>
+   532→                                <TableHead className="text-right">Income Range</TableHead>
+   533→                              </TableRow>
+   534→                            </TableHeader>
+   535→                            <TableBody>
+   536→                              {refData?.federalBracketsSingle.map((b, i) => (
+   537→                                <TableRow key={i}>
+   538→                                  <TableCell>
+   539→                                    <Badge variant={i < 2 ? "secondary" : "default"}>{b.rate}%</Badge>
+   540→                                  </TableCell>
+   541→                                  <TableCell className="text-right font-mono text-sm">
+   542→                                    {fmt(b.min)} {b.max ? `– ${fmt(b.max)}` : "+"}
+   543→                                  </TableCell>
+   544→                                </TableRow>
+   545→                              ))}
+   546→                            </TableBody>
+   547→                          </Table>
+   548→                        </div>
+   549→                      </div>
+   550→                      <div>
+   551→                        <h4 className="text-sm font-semibold text-center mb-2">Married Filing Jointly</h4>
+   552→                        <div className="rounded-lg border overflow-hidden">
+   553→                          <Table>
+   554→                            <TableHeader>
+   555→                              <TableRow className="bg-muted/50">
+   556→                                <TableHead>Rate</TableHead>
+   557→                                <TableHead className="text-right">Income Range</TableHead>
+   558→                              </TableRow>
+   559→                            </TableHeader>
+   560→                            <TableBody>
+   561→                              {refData?.federalBracketsMarried.map((b, i) => (
+   562→                                <TableRow key={i}>
+   563→                                  <TableCell>
+   564→                                    <Badge variant={i < 2 ? "secondary" : "default"}>{b.rate}%</Badge>
+   565→                                  </TableCell>
+   566→                                  <TableCell className="text-right font-mono text-sm">
+   567→                                    {fmt(b.min)} {b.max ? `– ${fmt(b.max)}` : "+"}
+   568→                                  </TableCell>
+   569→                                </TableRow>
+   570→                              ))}
+   571→                            </TableBody>
+   572→                          </Table>
+   573→                        </div>
+   574→                      </div>
+   575→                    </div>
+   576→                  </div>
+   577→
+   578→                  {/* Worked Example */}
+   579→                  <Card className="border-2 border-emerald-200 dark:border-emerald-800">
+   580→                    <CardHeader>
+   581→                      <CardTitle className="text-base flex items-center gap-2">
+   582→                        <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+   583→                        Worked Example: $75,000 Single Filer
+   584→                      </CardTitle>
+   585→                    </CardHeader>
+   586→                    <CardContent>
+   587→                      <div className="space-y-3 text-sm">
+   588→                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+   589→                          <div className="bg-gray-50 dark:bg-gray-900 rounded p-3">
+   590→                            <div className="text-xs text-muted-foreground">Gross Income</div>
+   591→                            <div className="font-bold text-lg">$75,000</div>
+   592→                          </div>
+   593→                          <div className="bg-red-50 dark:bg-red-950/30 rounded p-3">
+   594→                            <div className="text-xs text-muted-foreground">Standard Deduction</div>
+   595→                            <div className="font-bold text-lg text-red-600">− $14,600</div>
+   596→                          </div>
+   597→                          <div className="bg-emerald-50 dark:bg-emerald-950/30 rounded p-3">
+   598→                            <div className="text-xs text-muted-foreground">Taxable Income</div>
+   599→                            <div className="font-bold text-lg text-emerald-700">$60,400</div>
+   600→                          </div>
+   601→                        </div>
+   602→                        <div className="rounded-lg border overflow-hidden">
+   603→                          <Table>
+   604→                            <TableHeader>
+   605→                              <TableRow className="bg-muted/50">
+   606→                                <TableHead>Bracket</TableHead>
+   607→                                <TableHead className="text-right">Taxable Amount</TableHead>
+   608→                                <TableHead className="text-right">Rate</TableHead>
+   609→                                <TableHead className="text-right">Tax</TableHead>
+   610→                              </TableRow>
+   611→                            </TableHeader>
+   612→                            <TableBody>
+   613→                              <TableRow>
+   614→                                <TableCell>$0 – $11,600</TableCell>
+   615→                                <TableCell className="text-right font-mono">$11,600</TableCell>
+   616→                                <TableCell className="text-right">10%</TableCell>
+   617→                                <TableCell className="text-right font-semibold text-red-600">$1,160.00</TableCell>
+   618→                              </TableRow>
+   619→                              <TableRow>
+   620→                                <TableCell>$11,601 – $47,150</TableCell>
+   621→                                <TableCell className="text-right font-mono">$35,550</TableCell>
+   622→                                <TableCell className="text-right">12%</TableCell>
+   623→                                <TableCell className="text-right font-semibold text-red-600">$4,266.00</TableCell>
+   624→                              </TableRow>
+   625→                              <TableRow>
+   626→                                <TableCell>$47,151 – $60,400</TableCell>
+   627→                                <TableCell className="text-right font-mono">$13,250</TableCell>
+   628→                                <TableCell className="text-right">22%</TableCell>
+   629→                                <TableCell className="text-right font-semibold text-red-600">$2,915.00</TableCell>
+   630→                              </TableRow>
+   631→                              <TableRow className="bg-emerald-50 dark:bg-emerald-950/30 font-bold">
+   632→                                <TableCell colSpan={3}>Total Federal Income Tax</TableCell>
+   633→                                <TableCell className="text-right text-red-600">$8,341.00</TableCell>
+   634→                              </TableRow>
+   635→                              <TableRow className="bg-emerald-50 dark:bg-emerald-950/30">
+   636→                                <TableCell colSpan={3}>Effective Tax Rate</TableCell>
+   637→                                <TableCell className="text-right text-emerald-700">11.12%</TableCell>
+   638→                              </TableRow>
+   639→                              <TableRow className="bg-emerald-50 dark:bg-emerald-950/30">
+   640→                                <TableCell colSpan={3}>Marginal Tax Rate</TableCell>
+   641→                                <TableCell className="text-right">
+   642→                                  <Badge>22%</Badge>
+   643→                                </TableCell>
+   644→                              </TableRow>
+   645→                            </TableBody>
+   646→                          </Table>
+   647→                        </div>
+   648→                        <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-3 mt-3">
+   649→                          <div className="flex items-start gap-2">
+   650→                            <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+   651→                            <span>
+   652→                              <strong>Note:</strong> The marginal rate (22%) only applies to income <em>above</em> $47,150.
+   653→                              Your effective rate (11.12%) is much lower because most income is taxed in lower brackets.
+   654→                              This is a common misconception — earning more doesn&apos;t mean ALL your income is taxed at the higher rate!
+   655→                            </span>
+   656→                          </div>
+   657→                        </div>
+   658→                      </div>
+   659→                    </CardContent>
+   660→                  </Card>
+   661→
+   662→                  {/* Marginal vs Effective */}
+   663→                  <Card>
+   664→                <CardHeader>
+   665→                  <CardTitle className="text-base">Marginal vs Effective Tax Rate</CardTitle>
+   666→                </CardHeader>
+   667→                <CardContent>
+   668→                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+   669→                    <div className="p-4 rounded-lg border-2 border-orange-200 dark:border-orange-800">
+   670→                      <h4 className="font-semibold flex items-center gap-2 mb-2">
+   671→                        <TrendingUp className="h-4 w-4 text-orange-600" />
+   672→                        Marginal Rate
+   673→                      </h4>
+   674→                      <p className="text-sm text-muted-foreground">
+   675→                        The tax rate on your <strong>last dollar earned</strong>. If you&apos;re in the 22% bracket,
+   676→                        only income above the 22% threshold is taxed at 22%. Important for evaluating the tax impact of a raise.
+   677→                      </p>
+   678→                    </div>
+   679→                    <div className="p-4 rounded-lg border-2 border-emerald-200 dark:border-emerald-800">
+   680→                      <h4 className="font-semibold flex items-center gap-2 mb-2">
+   681→                        <TrendingUp className="h-4 w-4 text-emerald-600" />
+   682→                        Effective Rate
+   683→                      </h4>
+   684→                      <p className="text-sm text-muted-foreground">
+   685→                        The <strong>average rate</strong> across all your income. Calculated as total tax ÷ total income.
+   686→                        This tells you what percentage of your income actually goes to federal tax.
+   687→                      </p>
+   688→                    </div>
+   689→                  </div>
+   690→                </CardContent>
+   691→              </Card>
+   692→
+   693→              {/* W-4 Withholding */}
+   694→              <Card>
+   695→                <CardHeader>
+   696→                  <CardTitle className="text-base">Form W-4 & Tax Withholding</CardTitle>
+   697→                  <CardDescription>
+   698→                    The W-4 form tells your employer how much federal income tax to withhold from each paycheck
+   699→                  </CardDescription>
+   700→                </CardHeader>
+   701→                <CardContent className="text-sm space-y-3 text-muted-foreground">
+   702→                  <p>
+   703→                    When you start a new job, you fill out IRS Form W-4. This determines how much federal tax
+   704→                    your employer withholds. Key factors:
+   705→                  </p>
+   706→                  <ul className="list-disc list-inside space-y-1.5 ml-2">
+   707→                    <li><strong>Step 1:</strong> Multiple jobs or working spouse — adjust for accurate withholding</li>
+   708→                    <li><strong>Step 2:</strong> Claim dependents — each qualifying child under 17 reduces withholding by ~$2,000</li>
+   709→                    <li><strong>Step 3:</strong> Other adjustments — other income, deductions, extra withholding</li>
+   710→                    <li><strong>Step 4:</strong> You can also specify an exact extra amount to withhold per pay period</li>
+   711→                  </ul>
+   712→                  <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-lg p-3">
+   713→                    <div className="flex items-start gap-2">
+   714→                      <Lightbulb className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+   715→                      <span>
+   716→                        <strong>Tip:</strong> If you got a large refund last year, your withholding is too high (you&apos;re giving the
+   717→                        government an interest-free loan). If you owed taxes, increase your withholding.
+   718→                      </span>
+   719→                    </div>
+   720→                  </div>
+   721→                </CardContent>
+   722→              </Card>
+   723→            </CardContent>
+   724→            </Card>
+   725→            </motion.div>
+   726→          </TabsContent>
+   727→
+   728→          {/* ===== TAXATION ===== */}
+   729→          <TabsContent value="taxation">
+   730→            <TaxationSection />
+   731→          </TabsContent>
+   732→
+   733→          {/* ===== FICA ===== */}
+   734→          <TabsContent value="fica">
+   735→            <motion.div {...fadeIn} className="space-y-6">
+   736→              <Card>
+   737→                <CardHeader>
+   738→                  <CardTitle className="flex items-center gap-2">
+   739→                    <Shield className="h-5 w-5 text-emerald-600" />
+   740→                    What is FICA?
+   741→                  </CardTitle>
+   742→                  <CardDescription>
+   743→                    FICA (Federal Insurance Contributions Act) funds Social Security and Medicare — two of the largest social safety net programs in the US.
+   744→                  </CardDescription>
+   745→                </CardHeader>
+   746→                <CardContent className="space-y-4">
+   747→                  <p className="text-sm text-muted-foreground">
+   748→                    FICA taxes are <strong>mandatory</strong> for both employees and employers. They are flat-rate taxes
+   749→                    (not progressive), and you cannot opt out. Both you and your employer each pay half.
+   750→                  </p>
+   751→                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+   752→                    <FICACard
+   753→                      title="Social Security (OASDI)"
+   754→                      rate="6.2%"
+   755→                      wageBase="$168,600"
+   756→                      employerMatch="6.2%"
+   757→                      description="Provides retirement, disability, and survivor benefits. The tax applies only to earnings up to the wage base limit."
+   758→                      benefits={["Retirement benefits (at full retirement age)", "Disability benefits", "Survivor benefits for dependents", "Medicare eligibility (at 65)"]}
+   759→                      color="emerald"
+   760→                    />
+   761→                    <FICACard
+   762→                      title="Medicare"
+   763→                      rate="1.45%"
+   764→                      wageBase="No Limit"
+   765→                      employerMatch="1.45%"
+   766→                      description="Provides health insurance for Americans aged 65+ and some younger people with disabilities. No wage base cap."
+   767→                      benefits={["Hospital insurance (Part A)", "Medical insurance (Part B)", "Prescription drug coverage (Part D)", "Medicare Advantage plans (Part C)"]}
+   768→                      color="teal"
+   769→                    />
+   770→                  </div>
+   771→                </CardContent>
+   772→              </Card>
+   773→
+   774→              {/* Additional Medicare */}
+   775→              <Card className="border-2 border-amber-200 dark:border-amber-800">
+   776→                <CardHeader>
+   777→                  <CardTitle className="text-base flex items-center gap-2">
+   778→                    <AlertTriangle className="h-4 w-4 text-amber-600" />
+   779→                    Additional Medicare Tax (High Earners)
+   780→                  </CardTitle>
+   781→                </CardHeader>
+   782→                <CardContent className="text-sm space-y-3 text-muted-foreground">
+   783→                  <p>
+   784→                    If your earnings exceed <strong>$200,000</strong> (single) or <strong>$250,000</strong> (married filing jointly),
+   785→                    an <strong>additional 0.9% Medicare tax</strong> applies to income above the threshold.
+   786→                  </p>
+   787→                  <div className="bg-amber-50 dark:bg-amber-950/30 rounded-lg p-3">
+   788→                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
+   789→                      <div>
+   790→                        <div className="text-xs text-muted-foreground">Threshold (Single)</div>
+   791→                        <div className="text-lg font-bold">$200,000</div>
+   792→                      </div>
+   793→                      <div>
+   794→                        <div className="text-xs text-muted-foreground">Threshold (Married)</div>
+   795→                        <div className="text-lg font-bold">$250,000</div>
+   796→                      </div>
+   797→                      <div>
+   798→                        <div className="text-xs text-muted-foreground">Additional Rate</div>
+   799→                        <div className="text-lg font-bold text-red-600">0.9%</div>
+   800→                      </div>
+   801→                    </div>
+   802→                  </div>
+   803→                  <p>
+   804→                    <strong>Example:</strong> If you earn $250,000, you pay 1.45% on all $250,000 + 0.9% on the $50,000 above $200,000.
+   805→                    Unlike the regular Medicare tax, the <strong>employer does NOT match</strong> the additional Medicare tax.
+   806→                  </p>
+   807→                </CardContent>
+   808→              </Card>
+   809→
+   810→              {/* Self-Employment */}
+   811→              <Card>
+   812→                <CardHeader>
+   813→                  <CardTitle className="text-base flex items-center gap-2">
+   814→                    <Users className="h-4 w-4 text-emerald-600" />
+   815→                    Self-Employment Tax (SECA)
+   816→                  </CardTitle>
+   817→                </CardHeader>
+   818→                <CardContent className="text-sm space-y-3 text-muted-foreground">
+   819→                  <p>
+   820→                    Self-employed individuals pay <strong>both the employee and employer portions</strong> of FICA,
+   821→                    totaling <strong>15.3%</strong> (12.4% SS + 2.9% Medicare). However, you can deduct half of this
+   822→                    as a business expense.
+   823→                  </p>
+   824→                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+   825→                    <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
+   826→                      <div className="font-semibold text-sm mb-1">Employee (W-2)</div>
+   827→                      <div className="text-xs">Pays 7.65% (6.2% + 1.45%)</div>
+   828→                      <div className="text-xs text-muted-foreground">Employer matches the other 7.65%</div>
+   829→                    </div>
+   830→                    <div className="bg-orange-50 dark:bg-orange-950/30 rounded-lg p-3">
+   831→                      <div className="font-semibold text-sm mb-1">Self-Employed (1099)</div>
+   832→                      <div className="text-xs">Pays 15.3% total (12.4% + 2.9%)</div>
+   833→                      <div className="text-xs text-muted-foreground">Can deduct 50% (7.65%) as business expense</div>
+   834→                    </div>
+   835→                  </div>
+   836→                </CardContent>
+   837→              </Card>
+   838→
+   839→              {/* FICA Example */}
+   840→              <Card className="border-2 border-emerald-200 dark:border-emerald-800">
+   841→                <CardHeader>
+   842→                  <CardTitle className="text-base flex items-center gap-2">
+   843→                    <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+   844→                    Worked Example: FICA on $85,000
+   845→                  </CardTitle>
+   846→                </CardHeader>
+   847→                <CardContent>
+   848→                  <div className="rounded-lg border overflow-hidden">
+   849→                    <Table>
+   850→                      <TableHeader>
+   851→                        <TableRow className="bg-muted/50">
+   852→                          <TableHead>Tax</TableHead>
+   853→                          <TableHead className="text-right">Rate</TableHead>
+   854→                          <TableHead className="text-right">Wages Subject To</TableHead>
+   855→                          <TableHead className="text-right">Annual Tax</TableHead>
+   856→                          <TableHead className="text-right">Per Paycheck (26)</TableHead>
+   857→                        </TableRow>
+   858→                      </TableHeader>
+   859→                      <TableBody>
+   860→                        <TableRow>
+   861→                          <TableCell>Social Security</TableCell>
+   862→                          <TableCell className="text-right">6.2%</TableCell>
+   863→                          <TableCell className="text-right font-mono">$85,000</TableCell>
+   864→                          <TableCell className="text-right font-semibold text-red-600">$5,270.00</TableCell>
+   865→                          <TableCell className="text-right font-mono">$202.69</TableCell>
+   866→                        </TableRow>
+   867→                        <TableRow>
+   868→                          <TableCell>Medicare</TableCell>
+   869→                          <TableCell className="text-right">1.45%</TableCell>
+   870→                          <TableCell className="text-right font-mono">$85,000</TableCell>
+   871→                          <TableCell className="text-right font-semibold text-red-600">$1,232.50</TableCell>
+   872→                          <TableCell className="text-right font-mono">$47.40</TableCell>
+   873→                        </TableRow>
+   874→                        <TableRow className="bg-emerald-50 dark:bg-emerald-950/30 font-bold">
+   875→                          <TableCell>Total FICA</TableCell>
+   876→                          <TableCell className="text-right">7.65%</TableCell>
+   877→                          <TableCell />
+   878→                          <TableCell className="text-right text-red-600">$6,502.50</TableCell>
+   879→                          <TableCell className="text-right">$250.10</TableCell>
+   880→                        </TableRow>
+   881→                      </TableBody>
+   882→                    </Table>
+   883→                  </div>
+   884→                </CardContent>
+   885→              </Card>
+   886→            </motion.div>
+   887→          </TabsContent>
+   888→
+   889→          {/* ===== STATE TAX ===== */}
+   890→          <TabsContent value="state">
+   891→            <motion.div {...fadeIn} className="space-y-6">
+   892→              <Card>
+   893→                <CardHeader>
+   894→                  <CardTitle className="flex items-center gap-2">
+   895→                    <MapPin className="h-5 w-5 text-emerald-600" />
+   896→                    State Income Tax Overview
+   897→                  </CardTitle>
+   898→                  <CardDescription>
+   899→                    41 states plus DC levy income tax. 9 states have no income tax. Rates and structures vary widely.
+   900→                  </CardDescription>
+   901→                </CardHeader>
+   902→                <CardContent className="space-y-6">
+   903→                  {/* No-Tax States */}
+   904→                  <div>
+   905→                    <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+   906→                      <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+   907→                      States With NO Income Tax
+   908→                    </h3>
+   909→                    <div className="flex flex-wrap gap-2">
+   910→                      {["Alaska", "Florida", "Nevada", "New Hampshire", "South Dakota", "Tennessee", "Texas", "Washington", "Wyoming"].map(
+   911→                        (s) => (
+   912→                          <Badge key={s} variant="outline" className="text-emerald-700 border-emerald-300 dark:border-emerald-700 py-1.5 px-3">
+   913→                            {s}
+   914→                          </Badge>
+   915→                        )
+   916→                      )}
+   917→                    </div>
+   918→                    <p className="text-xs text-muted-foreground mt-2">
+   919→                      New Hampshire only taxes interest and dividend income (phasing out by 2025).
+   920→                    </p>
+   921→                  </div>
+   922→
+   923→                  <Separator />
+   924→
+   925→                  {/* State Tax Chart */}
+   926→                  <div>
+   927→                    <h3 className="text-sm font-semibold mb-3">State Tax Comparison (Top Rates)</h3>
+   928→                    <div className="h-[300px] w-full">
+   929→                      <ResponsiveContainer>
+   930→                        <BarChart data={refData?.states.filter((s) => s.hasIncomeTax).sort((a, b) => b.topRate - a.topRate).slice(0, 15) || []}>
+   931→                          <CartesianGrid strokeDasharray="3 3" />
+   932→                          <XAxis dataKey="code" tick={{ fontSize: 12 }} />
+   933→                          <YAxis tick={{ fontSize: 12 }} unit="%" />
+   934→                          <RTooltip formatter={(value: number) => [`${value}%`, "Top Rate"]} />
+   935→                          <Bar dataKey="topRate" fill="#059669" radius={[4, 4, 0, 0]} />
+   936→                        </BarChart>
+   937→                      </ResponsiveContainer>
+   938→                    </div>
+   939→                  </div>
+   940→
+   941→                  <Separator />
+   942→
+   943→                  {/* State Table */}
+   944→                  <div>
+   945→                    <h3 className="text-sm font-semibold mb-3">Full State Tax Reference</h3>
+   946→                    <div className="max-h-[400px] overflow-y-auto rounded-lg border">
+   947→                      <Table>
+   948→                        <TableHeader className="sticky top-0 bg-muted z-10">
+   949→                          <TableRow>
+   950→                            <TableHead>State</TableHead>
+   951→                            <TableHead className="text-center">Code</TableHead>
+   952→                            <TableHead className="text-center">Has Tax?</TableHead>
+   953→                            <TableHead className="text-center">Flat/Progressive</TableHead>
+   954→                            <TableHead className="text-right">Top Rate</TableHead>
+   955→                          </TableRow>
+   956→                        </TableHeader>
+   957→                        <TableBody>
+   958→                          {refData?.states
+   959→                            .sort((a, b) => a.name.localeCompare(b.name))
+   960→                            .map((s) => (
+   961→                              <TableRow key={s.code}>
+   962→                                <TableCell className="font-medium">{s.name}</TableCell>
+   963→                                <TableCell className="text-center font-mono text-xs">{s.code}</TableCell>
+   964→                                <TableCell className="text-center">
+   965→                                  {s.hasIncomeTax ? (
+   966→                                    <Badge variant="default" className="bg-red-100 text-red-700 hover:bg-red-100 text-xs">Yes</Badge>
+   967→                                  ) : (
+   968→                                    <Badge variant="secondary" className="text-emerald-700 text-xs">No</Badge>
+   969→                                  )}
+   970→                                </TableCell>
+   971→                                <TableCell className="text-center text-sm">
+   972→                                  {s.hasIncomeTax ? (s.flatTax ? "Flat" : "Progressive") : "—"}
+   973→                                </TableCell>
+   974→                                <TableCell className="text-right font-mono text-sm">
+   975→                                  {s.topRate > 0 ? `${s.topRate}%` : "0%"}
+   976→                                </TableCell>
+   977→                              </TableRow>
+   978→                            ))}
+   979→                        </TableBody>
+   980→                      </Table>
+   981→                    </div>
+   982→                  </div>
+   983→
+   984→                  {/* Local Taxes */}
+   985→                  <Card className="bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800">
+   986→                    <CardHeader className="pb-2">
+   987→                      <CardTitle className="text-sm">Additional Local Taxes</CardTitle>
+   988→                    </CardHeader>
+   989→                    <CardContent className="text-sm text-muted-foreground">
+   990→                      <p>Some cities and counties impose additional income taxes:</p>
+   991→                      <ul className="list-disc list-inside mt-2 space-y-1">
+   992→                        <li><strong>New York City:</strong> 3.078% – 3.876% (on top of NYS tax)</li>
+   993→                        <li><strong>Yonkers, NY:</strong> ~1.6% (varies by income)</li>
+   994→                        <li><strong>Baltimore, MD:</strong> 3.05% (city income tax)</li>
+   995→                        <li><strong>Detroit, MI:</strong> 2.4% (resident rate)</li>
+   996→                        <li><strong>Ohio cities:</strong> Many have municipal income taxes (Columbus, Cincinnati, Cleveland)</li>
+   997→                        <li><strong>Kentucky:</strong> All cities impose occupational license fees (0.5% – 2.5%)</li>
+   998→                      </ul>
+   999→                    </CardContent>
+  1000→                  </Card>
+  1001→                </CardContent>
+  1002→              </Card>
+  1003→            </motion.div>
+  1004→          </TabsContent>
+  1005→
+  1006→          {/* ===== CALCULATOR ===== */}
+  1007→          <TabsContent value="calculator">
+  1008→            <motion.div {...fadeIn}>
+  1009→              <PayrollCalculator />
+  1010→            </motion.div>
+  1011→          </TabsContent>
+  1012→
+  1013→          {/* ===== PAY STUB ===== */}
+  1014→          <TabsContent value="paystub">
+  1015→            <motion.div {...fadeIn} className="space-y-6">
+  1016→              <Card>
+  1017→                <CardHeader>
+  1018→                  <CardTitle className="flex items-center gap-2">
+  1019→                    <Receipt className="h-5 w-5 text-emerald-600" />
+  1020→                    Understanding Your Pay Stub
+  1021→                  </CardTitle>
+  1022→                  <CardDescription>
+  1023→                    A real-world example of a typical pay stub. Hover over each section to understand what it means.
+  1024→                  </CardDescription>
+  1025→                </CardHeader>
+  1026→                <CardContent className="space-y-4 text-sm text-muted-foreground">
+  1027→                  <p>
+  1028→                    Your pay stub (also called an earnings statement or paycheck stub) is a document from your employer
+  1029→                    showing your earnings and deductions for a specific pay period. Understanding each line is essential
+  1030→                    for verifying you&apos;re being paid correctly.
+  1031→                  </p>
+  1032→                </CardContent>
+  1033→              </Card>
+  1034→
+  1035→              {payStubResult && <PayStubView result={payStubResult} />}
+  1036→
+  1037→              <Card>
+  1038→                <CardHeader>
+  1039→                  <CardTitle className="text-base">Key Pay Stub Sections Explained</CardTitle>
+  1040→                </CardHeader>
+  1041→                <CardContent>
+  1042→                  <Accordion type="single" collapsible className="w-full">
+  1043→                    <AccordionItem value="header">
+  1044→                      <AccordionTrigger className="text-sm font-medium">Company & Employee Information</AccordionTrigger>
+  1045→                      <AccordionContent className="text-sm text-muted-foreground">
+  1046→                        The header shows the employer&apos;s name, address, and EIN (Employer Identification Number).
+  1047→                        It also shows your name, employee ID, pay period dates, and pay date. Verify this information
+  1048→                        is correct, especially after a name change or address update.
+  1049→                      </AccordionContent>
+  1050→                    </AccordionItem>
+  1051→                    <AccordionItem value="earnings">
+  1052→                      <AccordionTrigger className="text-sm font-medium">Gross Earnings Section</AccordionTrigger>
+  1053→                      <AccordionContent className="text-sm text-muted-foreground">
+  1054→                        This shows your total earnings before deductions. It includes regular pay, overtime, bonuses,
+  1055→                        commissions, and other compensation. The &quot;Rate&quot; column shows your hourly rate or salary per period,
+  1056→                        and &quot;Hours&quot; shows hours worked (for hourly employees). YTD (Year-To-Date) totals help you
+  1057→                        track cumulative earnings.
+  1058→                      </AccordionContent>
+  1059→                    </AccordionItem>
+  1060→                    <AccordionItem value="taxes">
+  1061→                      <AccordionTrigger className="text-sm font-medium">Taxes & Withholdings</AccordionTrigger>
+  1062→                      <AccordionContent className="text-sm text-muted-foreground">
+  1063→                        This section lists all tax deductions: Federal Income Tax (based on your W-4), Social Security (6.2%),
+  1064→                        Medicare (1.45%), and State Income Tax. Some pay stubs also show local/city taxes. The amounts
+  1065→                        withheld are estimates — actual tax liability is calculated when you file your tax return.
+  1066→                      </AccordionContent>
+  1067→                    </AccordionItem>
+  1068→                    <AccordionItem value="deductions">
+  1069→                      <AccordionTrigger className="text-sm font-medium">Pre-Tax & Post-Tax Deductions</AccordionTrigger>
+  1070→                      <AccordionContent className="text-sm text-muted-foreground">
+  1071→                        Pre-tax deductions (401k, health insurance, HSA, FSA) reduce your taxable income. Post-tax
+  1072→                        deductions (Roth 401k, garnishments, union dues) are taken after taxes. Pre-tax deductions
+  1073→                        save you money on taxes, making them more valuable than equivalent post-tax deductions.
+  1074→                      </AccordionContent>
+  1075→                    </AccordionItem>
+  1076→                    <AccordionItem value="netpay">
+  1077→                      <AccordionTrigger className="text-sm font-medium">Net Pay</AccordionTrigger>
+  1078→                      <AccordionContent className="text-sm text-muted-foreground">
+  1079→                        This is your take-home pay — the amount deposited into your bank account. It&apos;s calculated as
+  1080→                        Gross Pay minus all deductions. Your net pay should match the deposit amount. If it doesn&apos;t,
+  1081→                        contact your payroll department immediately.
+  1082→                      </AccordionContent>
+  1083→                    </AccordionItem>
+  1084→                  </Accordion>
+  1085→                </CardContent>
+  1086→              </Card>
+  1087→            </motion.div>
+  1088→          </TabsContent>
+  1089→
+  1090→          {/* ===== SCENARIOS ===== */}
+  1091→          <TabsContent value="scenarios">
+  1092→            <motion.div {...fadeIn} className="space-y-6">
+  1093→              <Card>
+  1094→                <CardHeader>
+  1095→                  <CardTitle className="flex items-center gap-2">
+  1096→                    <Users className="h-5 w-5 text-emerald-600" />
+  1097→                    Practical Real-World Scenarios
+  1098→                  </CardTitle>
+  1099→                  <CardDescription>
+  1100→                    See how payroll works for different income levels, locations, and life situations
+  1101→                  </CardDescription>
+  1102→                </CardHeader>
+  1103→                <CardContent>
+  1104→                  <ScenariosSection />
+  1105→                </CardContent>
+  1106→              </Card>
+  1107→            </motion.div>
+  1108→          </TabsContent>
+  1109→
+  1110→          {/* ===== GLOSSARY ===== */}
+  1111→          <TabsContent value="glossary">
+  1112→            <GlossarySection />
+  1113→          </TabsContent>
+  1114→
+  1115→          {/* ===== FORMS ===== */}
+  1116→          <TabsContent value="forms">
+  1117→            <motion.div {...fadeIn} className="space-y-6">
+  1118→              <Card>
+  1119→                <CardHeader>
+  1120→                  <CardTitle className="flex items-center gap-2">
+  1121→                    <FileText className="h-5 w-5 text-emerald-600" />
+  1122→                    Essential Payroll Forms
+  1123→                  </CardTitle>
+  1124→                  <CardDescription>
+  1125→                    Key IRS and government forms you&apos;ll encounter as an employee in the USA
+  1126→                  </CardDescription>
+  1127→                </CardHeader>
+  1128→                <CardContent className="space-y-6">
+  1129→                  {/* W-4 */}
+  1130→                  <FormCard
+  1131→                    formNumber="W-4"
+  1132→                    title="Employee's Withholding Certificate"
+  1133→                    when="When you start a new job, or when your tax situation changes (marriage, child, home purchase)"
+  1134→                    purpose="Tells your employer how much federal income tax to withhold from each paycheck"
+  1135→                    keyFields={[
+  1136→                      "Step 1: Multiple jobs or spouse works",
+  1137→                      "Step 2: Claim dependents (children under 17, other dependents)",
+  1138→                      "Step 3: Other adjustments (other income, deductions)",
+  1139→                      "Step 4: Extra withholding (optional additional amount)",
+  1140→                    ]}
+  1141→                    tip="If you consistently get large refunds, reduce your withholding — that's your money you could use throughout the year!"
+  1142→                  />
+  1143→
+  1144→                  {/* W-2 */}
+  1145→                  <FormCard
+  1146→                    formNumber="W-2"
+  1147→                    title="Wage and Tax Statement"
+  1148→                    when="Provided by your employer by January 31 each year"
+  1149→                    purpose="Summarizes your total earnings and all taxes withheld during the year. Essential for filing your tax return."
+  1150→                    keyFields={[
+  1151→                      "Box 1: Wages, tips, other compensation (federal taxable)",
+  1152→                      "Box 2: Federal income tax withheld",
+  1153→                      "Box 3: Social Security wages",
+  1154→                      "Box 4: Social Security tax withheld",
+  1155→                      "Box 5: Medicare wages",
+  1156→                      "Box 6: Medicare tax withheld",
+  1157→                      "Box 12: Various codes (401k, HSA, etc.)",
+  1158→                      "Box 17: State income tax withheld",
+  1159→                    ]}
+  1160→                    tip="Always verify your W-2 against your last December pay stub's YTD totals. Discrepancies should be reported to payroll immediately."
+  1161→                  />
+  1162→
+  1163→                  {/* I-9 */}
+  1164→                  <FormCard
+  1165→                    formNumber="I-9"
+  1166→                    title="Employment Eligibility Verification"
+  1167→                    when="Within 3 days of your start date"
+  1168→                    purpose="Verifies your identity and authorization to work in the United States"
+  1169→                    keyFields={[
+  1170→                      "Section 1: Employee information and attestation",
+  1171→                      "Section 2: Employer reviews documents (passport, driver's license, SSN card, etc.)",
+  1172→                      "Section 3: Reverification (if work authorization expires)",
+  1173→                    ]}
+  1174→                    tip="You must provide original documents (not copies). Common combinations: Passport alone, or Driver's License + SSN Card."
+  1175→                  />
+  1176→
+  1177→                  {/* 1099 */}
+  1178→                  <FormCard
+  1179→                    formNumber="1099-NEC"
+  1180→                    title="Nonemployee Compensation"
+  1181→                    when="Received by January 31 if you earned $600+ as an independent contractor"
+  1182→                    purpose="Reports income you received as a freelancer, contractor, or self-employed individual"
+  1183→                    keyFields={[
+  1184→                      "Box 1: Nonemployee compensation",
+  1185→                      "Box 4: Federal income tax withheld (if any)",
+  1186→                      "Box 5a/5b: State tax withheld",
+  1187→                    ]}
+  1188→                    tip="As a 1099 worker, you're responsible for paying both employer and employee FICA taxes (15.3%) and making quarterly estimated tax payments."
+  1189→                  />
+  1190→
+  1191→                  {/* 1040 */}
+  1192→                  <FormCard
+  1193→                    formNumber="1040"
+  1194→                    title="U.S. Individual Income Tax Return"
+  1195→                    when="Filed annually by April 15 (or October 15 with extension)"
+  1196→                    purpose="Your annual tax return where you calculate your actual tax liability and reconcile with what was withheld"
+  1197→                    keyFields={[
+  1198→                      "Income section: Wages (W-2), self-employment (1099), interest, dividends",
+  1199→                      "Deductions: Standard or itemized (mortgage interest, state taxes, charity)",
+  1200→                      "Tax credits: Child tax credit, education credits, EV credit",
+  1201→                      "Payments: Taxes withheld, estimated payments, prior year overpayment",
+  1202→                      "Result: Refund (if you overpaid) or Amount You Owe",
+  1203→                    ]}
+  1204→                    tip="The 1040 reconciles what was withheld from your paychecks with what you actually owe. If you had too much withheld, you get a refund."
+  1205→                  />
+  1206→                </CardContent>
+  1207→              </Card>
+  1208→
+  1209→              {/* Payroll Timeline */}
+  1210→              <Card>
+  1211→                <CardHeader>
+  1212→                  <CardTitle className="text-base">Payroll Processing Timeline</CardTitle>
+  1213→                </CardHeader>
+  1214→                <CardContent>
+  1215→                  <div className="space-y-4">
+  1216→                    {[
+  1217→                      { step: "1", title: "Time Tracking", desc: "Hours worked are recorded (time clock, timesheet, or salary tracking)", icon: Clock },
+  1218→                      { step: "2", title: "Payroll Processing", desc: "Employer calculates gross pay, applies deductions, and withholds taxes", icon: Calculator },
+  1219→                      { step: "3", title: "Tax Deposits", desc: "Employer deposits withheld taxes to IRS and state (semi-weekly or monthly)", icon: Landmark },
+  1220→                      { step: "4", title: "Paycheck Issued", desc: "Direct deposit or paper check delivered on pay date", icon: Banknote },
+  1221→                      { step: "5", title: "Quarterly Reporting", desc: "Form 941 filed quarterly with IRS summarizing withheld taxes", icon: FileText },
+  1222→                      { step: "6", title: "Annual Reporting", desc: "W-2 provided to employee, W-3/W-2 summary filed with SSA by January 31", icon: Receipt },
+  1223→                    ].map((item) => (
+  1224→                      <div key={item.step} className="flex gap-4 items-start">
+  1225→                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center text-sm font-bold">
+  1226→                          {item.step}
+  1227→                        </div>
+  1228→                        <div className="flex-1 pb-4 border-b last:border-0">
+  1229→                          <div className="font-semibold text-sm">{item.title}</div>
+  1230→                          <div className="text-sm text-muted-foreground">{item.desc}</div>
+  1231→                        </div>
+  1232→                      </div>
+  1233→                    ))}
+  1234→                  </div>
+  1235→                </CardContent>
+  1236→              </Card>
+  1237→            </motion.div>
+  1238→          </TabsContent>
+  1239→        </Tabs>
+  1240→      </main>
+  1241→
+  1242→      {/* Footer */}
+  1243→      <footer className="bg-gray-50 dark:bg-gray-900 border-t mt-auto">
+  1244→        <div className="max-w-6xl mx-auto px-4 py-6">
+  1245→          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+  1246→            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+  1247→              <GraduationCap className="h-4 w-4" />
+  1248→              <span>USA Payroll Learning Guide — 2024 Tax Year</span>
+  1249→            </div>
+  1250→            <div className="text-xs text-muted-foreground text-center">
+  1251→              For educational purposes only. Tax laws change frequently. Consult a tax professional for personal advice.
+  1252→            </div>
+  1253→          </div>
+  1254→        </div>
+  1255→      </footer>
+  1256→    </div>
+  1257→  );
+  1258→}
+  1259→
+  1260→// ===== Sub-components =====
+  1261→
+  1262→function InfoCard({
+  1263→  icon: Icon,
+  1264→  title,
+  1265→  description,
+  1266→  color,
+  1267→}: {
+  1268→  icon: React.ComponentType<{ className?: string }>;
+  1269→  title: string;
+  1270→  description: string;
+  1271→  color: string;
+  1272→}) {
+  1273→  return (
+  1274→    <Card className={`${color === "emerald" ? "border-emerald-200 dark:border-emerald-800" : "border-red-200 dark:border-red-800"}`}>
+  1275→      <CardContent className="pt-4">
+  1276→        <Icon className={`h-5 w-5 ${color === "emerald" ? "text-emerald-600" : "text-red-600"} mb-2`} />
+  1277→        <div className="font-semibold text-sm">{title}</div>
+  1278→        <div className="text-xs text-muted-foreground mt-1">{description}</div>
+  1279→      </CardContent>
+  1280→    </Card>
+  1281→  );
+  1282→}
+  1283→
+  1284→function DeductionItem({ name, limit }: { name: string; limit: string }) {
+  1285→  return (
+  1286→    <div className="flex items-center justify-between bg-white dark:bg-gray-800 rounded px-2.5 py-1.5">
+  1287→      <span className="font-medium text-xs">{name}</span>
+  1288→      <span className="text-xs text-muted-foreground">{limit}</span>
+  1289→    </div>
+  1290→  );
+  1291→}
+  1292→
+  1293→function EarningCard({ title, description, example }: { title: string; description: string; example: string }) {
+  1294→  return (
+  1295→    <Card>
+  1296→      <CardContent className="pt-4">
+  1297→        <h4 className="font-semibold text-sm mb-1">{title}</h4>
+  1298→        <p className="text-xs text-muted-foreground mb-2">{description}</p>
+  1299→        <div className="font-mono text-xs bg-emerald-50 dark:bg-emerald-950/30 rounded px-2 py-1 text-emerald-700 dark:text-emerald-300">
+  1300→          {example}
+  1301→        </div>
+  1302→      </CardContent>
+  1303→    </Card>
+  1304→  );
+  1305→}
+  1306→
+  1307→function FICACard({
+  1308→  title,
+  1309→  rate,
+  1310→  wageBase,
+  1311→  employerMatch,
+  1312→  description,
+  1313→  benefits,
+  1314→  color,
+  1315→}: {
+  1316→  title: string;
+  1317→  rate: string;
+  1318→  wageBase: string;
+  1319→  employerMatch: string;
+  1320→  description: string;
+  1321→  benefits: string[];
+  1322→  color: string;
+  1323→}) {
+  1324→  return (
+  1325→    <Card className={`border-2 ${color === "emerald" ? "border-emerald-200 dark:border-emerald-800" : "border-teal-200 dark:border-teal-800"}`}>
+  1326→      <CardHeader className="pb-2">
+  1327→        <CardTitle className="text-base">{title}</CardTitle>
+  1328→      </CardHeader>
+  1329→      <CardContent className="space-y-3">
+  1330→        <p className="text-sm text-muted-foreground">{description}</p>
+  1331→        <div className="grid grid-cols-2 gap-2 text-sm">
+  1332→          <div className="bg-gray-50 dark:bg-gray-900 rounded p-2 text-center">
+  1333→            <div className="text-xs text-muted-foreground">Employee Rate</div>
+  1334→            <div className="font-bold text-lg">{rate}</div>
+  1335→          </div>
+  1336→          <div className="bg-gray-50 dark:bg-gray-900 rounded p-2 text-center">
+  1337→            <div className="text-xs text-muted-foreground">Employer Match</div>
+  1338→            <div className="font-bold text-lg">{employerMatch}</div>
+  1339→          </div>
+  1340→        </div>
+  1341→        <div className="text-sm">
+  1342→          <span className="text-muted-foreground">Wage Base: </span>
+  1343→          <span className="font-semibold">{wageBase}</span>
+  1344→        </div>
+  1345→        <div>
+  1346→          <div className="text-xs font-semibold mb-1.5">What It Funds:</div>
+  1347→          <ul className="space-y-1">
+  1348→            {benefits.map((b, i) => (
+  1349→              <li key={i} className="text-xs text-muted-foreground flex items-start gap-1.5">
+  1350→                <CheckCircle2 className="h-3 w-3 text-emerald-600 mt-0.5 flex-shrink-0" />
+  1351→                {b}
+  1352→              </li>
+  1353→            ))}
+  1354→          </ul>
+  1355→        </div>
+  1356→      </CardContent>
+  1357→    </Card>
+  1358→  );
+  1359→}
+  1360→
+  1361→function FormCard({
+  1362→  formNumber,
+  1363→  title,
+  1364→  when,
+  1365→  purpose,
+  1366→  keyFields,
+  1367→  tip,
+  1368→}: {
+  1369→  formNumber: string;
+  1370→  title: string;
+  1371→  when: string;
+  1372→  purpose: string;
+  1373→  keyFields: string[];
+  1374→  tip: string;
+  1375→}) {
+  1376→  return (
+  1377→    <Card className="border-2">
+  1378→      <CardHeader className="pb-3">
+  1379→        <div className="flex items-center gap-3">
+  1380→          <div className="flex-shrink-0 w-16 h-16 bg-emerald-600 text-white rounded-lg flex flex-col items-center justify-center">
+  1381→            <span className="text-xs font-medium opacity-75">IRS</span>
+  1382→            <span className="text-lg font-bold leading-tight">{formNumber}</span>
+  1383→          </div>
+  1384→          <div>
+  1385→            <CardTitle className="text-base">{title}</CardTitle>
+  1386→            <CardDescription className="mt-0.5">{when}</CardDescription>
+  1387→          </div>
+  1388→        </div>
+  1389→      </CardHeader>
+  1390→      <CardContent className="space-y-3">
+  1391→        <div>
+  1392→          <div className="text-xs font-semibold mb-1">Purpose</div>
+  1393→          <p className="text-sm text-muted-foreground">{purpose}</p>
+  1394→        </div>
+  1395→        <div>
+  1396→          <div className="text-xs font-semibold mb-1.5">Key Sections</div>
+  1397→          <ul className="space-y-1">
+  1398→            {keyFields.map((f, i) => (
+  1399→              <li key={i} className="text-sm text-muted-foreground flex items-start gap-1.5">
+  1400→                <ChevronRight className="h-3 w-3 text-emerald-600 mt-1 flex-shrink-0" />
+  1401→                {f}
+  1402→              </li>
+  1403→            ))}
+  1404→          </ul>
+  1405→        </div>
+  1406→        <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-lg p-3">
+  1407→          <div className="flex items-start gap-2">
+  1408→            <Lightbulb className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+  1409→            <span className="text-sm text-muted-foreground">{tip}</span>
+  1410→          </div>
+  1411→        </div>
+  1412→      </CardContent>
+  1413→    </Card>
+  1414→  );
+  1415→}
+  1416→
+  1417→

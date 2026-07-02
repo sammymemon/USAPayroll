@@ -489,12 +489,18 @@ export default function ScenariosSection() {
                 </BarChart>
               </ResponsiveContainer>
             </div>
-            <div className="mt-3 text-sm text-muted-foreground">
-              <strong>Key Takeaway:</strong> Living in Texas or Florida (no state income tax) saves you
-              approximately {fmt(comparisonData.find((d) => d.state === "CA")!.stateTax - comparisonData.find((d) => d.state === "TX")!.stateTax)}
-              /year in state taxes compared to California on a $100,000 salary. However, consider the full cost of
-              living — housing, property taxes, and sales tax may offset the income tax savings.
-            </div>
+            {(() => {
+              const caData = comparisonData.find((d) => d.state === "CA");
+              const txData = comparisonData.find((d) => d.state === "TX");
+              return caData && txData ? (
+                <div className="mt-3 text-sm text-muted-foreground">
+                  <strong>Key Takeaway:</strong> Living in Texas or Florida (no state income tax) saves you
+                  approximately {fmt(caData.stateTax - txData.stateTax)}
+                  /year in state taxes compared to California on a $100,000 salary. However, consider the full cost of
+                  living — housing, property taxes, and sales tax may offset the income tax savings.
+                </div>
+              ) : null;
+            })()}
           </CardContent>
         </Card>
       )}
