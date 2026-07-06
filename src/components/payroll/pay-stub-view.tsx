@@ -7,7 +7,7 @@ import { type CalcResult, fmt } from "@/lib/tax-engine";
 
 const FREQ_LABEL: Record<string, string> = { weekly: "Weekly", biweekly: "Bi-Weekly", semi_monthly: "Semi-Monthly", monthly: "Monthly", annual: "Annual" };
 
-export default function PayStubView({ result, employeeName = "John A. Doe", employeeId = "EMP-2024-0042" }: { result: CalcResult; employeeName?: string; employeeId?: string }) {
+export default function PayStubView({ result, employeeName = "John A. Doe", employeeId = "EMP-2026-0042" }: { result: CalcResult; employeeName?: string; employeeId?: string }) {
   const today = new Date();
   const payDate = today.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
   const ps = new Date(today.getTime() - 14 * 86400000);

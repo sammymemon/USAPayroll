@@ -71,7 +71,7 @@ const STRATEGIES: Strategy[] = [
     difficulty: "Easy",
     difficultyColor: "bg-emerald-100 text-emerald-700",
     description: "Contribute pre-tax dollars to reduce your taxable income. Every dollar you put in reduces your taxable income by a dollar.",
-    howItWorks: "Elect to contribute up to $23,000 (2024) of your pre-tax salary. At 22% bracket, each $1,000 contributed saves $220 in federal tax. Your money grows tax-deferred until retirement.",
+    howItWorks: "Elect to contribute up to $23,500 (2026) of your pre-tax salary. At 22% bracket, each $1,000 contributed saves $220 in federal tax. Your money grows tax-deferred until retirement.",
     example: "Earn $100K, contribute $23K → taxable income drops to $77K. You save ~$5,060 in federal tax + ~$1,035 in FICA. Total: ~$6,095 saved.",
     whoShouldUse: "Anyone with employer-sponsored 401(k), especially high-bracket earners. Even better if employer matches!",
     category: "Retirement",
@@ -85,7 +85,7 @@ const STRATEGIES: Strategy[] = [
     difficulty: "Easy",
     difficultyColor: "bg-emerald-100 text-emerald-700",
     description: "Health Savings Account is the ONLY account with triple tax advantages: tax-deductible contributions, tax-free growth, AND tax-free withdrawals for medical expenses.",
-    howItWorks: "Must have a High Deductible Health Plan (HDHP). Contribute up to $4,150 individual / $8,300 family (2024). Invest the balance for long-term growth. In retirement, withdraw for any purpose (pay income tax on non-medical withdrawals, similar to 401k).",
+    howItWorks: "Must have a High Deductible Health Plan (HDHP). Contribute up to $4,300 individual / $8,550 family (2026). Invest the balance for long-term growth. In retirement, withdraw for any purpose (pay income tax on non-medical withdrawals, similar to 401k).",
     example: "Contribute $4,150/year for 20 years, invest at 7% = ~$170K balance. If used for medical expenses, ALL of it is tax-free. If used in retirement for non-medical, taxed like a traditional IRA.",
     whoShouldUse: "Anyone with an HDHP. Best financial account in America for those who qualify. Treat it as a stealth retirement account.",
     category: "Healthcare",
@@ -141,7 +141,7 @@ const STRATEGIES: Strategy[] = [
     difficulty: "Medium",
     difficultyColor: "bg-amber-100 text-amber-700",
     description: "If you have self-employment, freelance, or small business income, you may deduct up to 20% of your qualified business income (Section 199A deduction).",
-    howItWorks: "Eligible income from pass-through entities (sole prop, LLC, S-corp, partnership). Deduction is up to 20% of QBI, subject to income thresholds and phase-outs. For 2024, full deduction available up to $191,950 (single) / $383,900 (married).",
+    howItWorks: "Eligible income from pass-through entities (sole prop, LLC, S-corp, partnership). Deduction is up to 20% of QBI, subject to income thresholds and phase-outs. For 2026, full deduction available up to $197,300 (single) / $394,600 (married).",
     example: "Freelancer earns $100K in 1099 income. QBI deduction = 20% × $100K = $20K deduction. This reduces taxable income from $100K to $80K. Tax savings: ~$4,400 at 22% bracket. It's essentially a 4.4% tax cut on business income.",
     whoShouldUse: "Self-employed, freelancers, and small business owners. Especially valuable for service businesses below the income threshold.",
     category: "Business",
@@ -169,7 +169,7 @@ const STRATEGIES: Strategy[] = [
     difficulty: "Easy",
     difficultyColor: "bg-emerald-100 text-emerald-700",
     description: "Set aside pre-tax dollars for healthcare or dependent care expenses. Reduces your taxable income dollar-for-dollar. But beware: 'use it or lose it' — unused funds are forfeited.",
-    howItWorks: "During open enrollment, elect to contribute up to $3,200 (Health Care FSA) or $5,000 (Dependent Care FSA) for 2024. Contributions are deducted pre-tax from each paycheck. Use the funds for eligible expenses during the plan year.",
+    howItWorks: "During open enrollment, elect to contribute up to $3,300 (Health Care FSA) or $5,000 (Dependent Care FSA) for 2026. Contributions are deducted pre-tax from each paycheck. Use the funds for eligible expenses during the plan year.",
     example: "Elect $3,200 Health Care FSA. In 22% bracket + 7.65% FICA = 29.65% combined. Tax savings: $3,200 × 29.65% = $949/year. If you also have $5,000 Dependent Care FSA: additional $1,483. Total: ~$2,432 saved.",
     whoShouldUse: "Anyone with predictable medical or childcare expenses. Best for those who know they'll use the full amount.",
     category: "Healthcare",
@@ -290,7 +290,7 @@ export default function TaxPlanningSection() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calculator className="h-5 w-5 text-emerald-600" />
-            Key Tax Dates to Remember (2024-2025)
+            Key Tax Dates to Remember (2026-2027)
           </CardTitle>
         </CardHeader>
         <CardContent>

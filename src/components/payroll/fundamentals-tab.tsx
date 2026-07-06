@@ -157,10 +157,10 @@ export default function FundamentalsTab() {
               </h4>
               <p className="text-sm text-muted-foreground mb-3">These are subtracted <strong>before</strong> taxes are calculated, lowering your overall tax burden.</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-                <DeductionItem name="401(k) Contributions" limit="$23,000 (2024), $30,500 if 50+" />
+                <DeductionItem name="401(k) Contributions" limit="$23,500 (2026), $31,000 if 50+" />
                 <DeductionItem name="Health Insurance Premiums" limit="No federal limit" />
-                <DeductionItem name="HSA Contributions" limit="$4,150 individual / $8,300 family" />
-                <DeductionItem name="FSA Contributions" limit="$3,200 (2024)" />
+                <DeductionItem name="HSA Contributions" limit="$4,300 individual / $8,550 family" />
+                <DeductionItem name="FSA Contributions" limit="$3,300 (2026)" />
                 <DeductionItem name="Commuter Benefits" limit="$315 transit + $315 parking" />
                 <DeductionItem name="Section 125 Cafeteria Plan" limit="Varies by plan" />
               </div>
@@ -180,7 +180,7 @@ export default function FundamentalsTab() {
               <p className="text-sm text-muted-foreground mb-3">These are subtracted <strong>after</strong> all taxes. They don&apos;t reduce your tax burden.</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                 <DeductionItem name="Roth 401(k)" limit="Same as traditional 401(k)" />
-                <DeductionItem name="Roth IRA" limit="$7,000 (2024), $8,000 if 50+" />
+                <DeductionItem name="Roth IRA" limit="$7,000 (2026), $8,000 if 50+" />
                 <DeductionItem name="Wage Garnishments" limit="Per court order" />
                 <DeductionItem name="Union Dues" limit="Varies by agreement" />
                 <DeductionItem name="Charitable Donations" limit="No payroll limit" />

@@ -33,7 +33,7 @@ export default function FederalTaxTab() {
               <Lightbulb className="h-5 w-5 text-emerald-600 mt-0.5 flex-shrink-0" />
               <div className="text-sm space-y-2">
                 <p><strong>Key Concept: Progressive Tax Brackets</strong> — Your income is not taxed at a single flat rate. Instead, it&apos;s divided into portions (&quot;brackets&quot;), and each portion is taxed at its own rate.</p>
-                <p><strong>Example:</strong> If you earn $60,000 (single filer), only the amount <em>above</em> $47,150 is taxed at 22%. The first $11,600 is taxed at 10%, and $11,601–$47,150 at 12%.</p>
+                <p><strong>Example:</strong> If you earn $60,000 (single filer), only the amount <em>above</em> $48,475 is taxed at 22%. The first $11,925 is taxed at 10%, and $11,926–$48,475 at 12%.</p>
               </div>
             </div>
           </div>
@@ -41,7 +41,7 @@ export default function FederalTaxTab() {
           <div>
             <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
               <FileText className="h-5 w-5 text-emerald-600" />
-              Standard Deduction (2024)
+              Standard Deduction (2026)
             </h3>
             <p className="text-sm text-muted-foreground mb-3">The standard deduction reduces your taxable income. Most employees use this instead of itemizing deductions.</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -57,7 +57,7 @@ export default function FederalTaxTab() {
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold mb-3">2024 Federal Tax Brackets</h3>
+            <h3 className="text-lg font-semibold mb-3">2026 Federal Tax Brackets</h3>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>
                 <h4 className="text-sm font-semibold text-center mb-2">Single Filers</h4>
@@ -105,18 +105,18 @@ export default function FederalTaxTab() {
               <div className="space-y-3 text-sm">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
                   <div className="bg-gray-50 dark:bg-gray-900 rounded p-3"><div className="text-xs text-muted-foreground">Gross Income</div><div className="font-bold text-lg">$75,000</div></div>
-                  <div className="bg-red-50 dark:bg-red-950/30 rounded p-3"><div className="text-xs text-muted-foreground">Standard Deduction</div><div className="font-bold text-lg text-red-600">− $14,600</div></div>
-                  <div className="bg-emerald-50 dark:bg-emerald-950/30 rounded p-3"><div className="text-xs text-muted-foreground">Taxable Income</div><div className="font-bold text-lg text-emerald-700">$60,400</div></div>
+                  <div className="bg-red-50 dark:bg-red-950/30 rounded p-3"><div className="text-xs text-muted-foreground">Standard Deduction</div><div className="font-bold text-lg text-red-600">− $15,000</div></div>
+                  <div className="bg-emerald-50 dark:bg-emerald-950/30 rounded p-3"><div className="text-xs text-muted-foreground">Taxable Income</div><div className="font-bold text-lg text-emerald-700">$60,000</div></div>
                 </div>
                 <div className="rounded-lg border overflow-hidden">
                   <Table>
                     <TableHeader><TableRow className="bg-muted/50"><TableHead>Bracket</TableHead><TableHead className="text-right">Taxable Amount</TableHead><TableHead className="text-right">Rate</TableHead><TableHead className="text-right">Tax</TableHead></TableRow></TableHeader>
                     <TableBody>
-                      <TableRow><TableCell>$0 – $11,600</TableCell><TableCell className="text-right font-mono">$11,600</TableCell><TableCell className="text-right">10%</TableCell><TableCell className="text-right font-semibold text-red-600">$1,160.00</TableCell></TableRow>
-                      <TableRow><TableCell>$11,601 – $47,150</TableCell><TableCell className="text-right font-mono">$35,550</TableCell><TableCell className="text-right">12%</TableCell><TableCell className="text-right font-semibold text-red-600">$4,266.00</TableCell></TableRow>
-                      <TableRow><TableCell>$47,151 – $60,400</TableCell><TableCell className="text-right font-mono">$13,250</TableCell><TableCell className="text-right">22%</TableCell><TableCell className="text-right font-semibold text-red-600">$2,915.00</TableCell></TableRow>
-                      <TableRow className="bg-emerald-50 dark:bg-emerald-950/30 font-bold"><TableCell colSpan={3}>Total Federal Income Tax</TableCell><TableCell className="text-right text-red-600">$8,341.00</TableCell></TableRow>
-                      <TableRow className="bg-emerald-50 dark:bg-emerald-950/30"><TableCell colSpan={3}>Effective Tax Rate</TableCell><TableCell className="text-right text-emerald-700">11.12%</TableCell></TableRow>
+                      <TableRow><TableCell>$0 – $11,925</TableCell><TableCell className="text-right font-mono">$11,925</TableCell><TableCell className="text-right">10%</TableCell><TableCell className="text-right font-semibold text-red-600">$1,192.50</TableCell></TableRow>
+                      <TableRow><TableCell>$11,926 – $48,475</TableCell><TableCell className="text-right font-mono">$36,550</TableCell><TableCell className="text-right">12%</TableCell><TableCell className="text-right font-semibold text-red-600">$4,386.00</TableCell></TableRow>
+                      <TableRow><TableCell>$48,476 – $60,000</TableCell><TableCell className="text-right font-mono">$11,525</TableCell><TableCell className="text-right">22%</TableCell><TableCell className="text-right font-semibold text-red-600">$2,535.50</TableCell></TableRow>
+                      <TableRow className="bg-emerald-50 dark:bg-emerald-950/30 font-bold"><TableCell colSpan={3}>Total Federal Income Tax</TableCell><TableCell className="text-right text-red-600">$8,114.00</TableCell></TableRow>
+                      <TableRow className="bg-emerald-50 dark:bg-emerald-950/30"><TableCell colSpan={3}>Effective Tax Rate</TableCell><TableCell className="text-right text-emerald-700">10.82%</TableCell></TableRow>
                       <TableRow className="bg-emerald-50 dark:bg-emerald-950/30"><TableCell colSpan={3}>Marginal Tax Rate</TableCell><TableCell className="text-right"><Badge>22%</Badge></TableCell></TableRow>
                     </TableBody>
                   </Table>
@@ -124,7 +124,7 @@ export default function FederalTaxTab() {
                 <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-3 mt-3">
                   <div className="flex items-start gap-2">
                     <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
-                    <span><strong>Note:</strong> The marginal rate (22%) only applies to income <em>above</em> $47,150. Your effective rate (11.12%) is much lower because most income is taxed in lower brackets.</span>
+                    <span><strong>Note:</strong> The marginal rate (22%) only applies to income <em>above</em> $48,475. Your effective rate (10.82%) is much lower because most income is taxed in lower brackets.</span>
                   </div>
                 </div>
               </div>

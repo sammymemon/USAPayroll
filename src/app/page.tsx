@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import {
   DollarSign, Receipt, FileText, Calculator, GraduationCap, BookOpen,
-  Lightbulb, TrendingUp, Shield, Users, MapPin, Scale, type LucideIcon,
+  Lightbulb, TrendingUp, Shield, Users, MapPin, Scale, Brain, type LucideIcon,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -20,6 +20,7 @@ const tabs: { id: string; label: string; icon: LucideIcon }[] = [
   { id: "scenarios", label: "Scenarios", icon: Users },
   { id: "glossary", label: "Glossary", icon: BookOpen },
   { id: "forms", label: "Forms", icon: FileText },
+  { id: "interview", label: "Interview Prep", icon: Brain },
 ];
 
 const loaders: Record<string, () => Promise<{ default: React.ComponentType }>> = {
@@ -33,6 +34,7 @@ const loaders: Record<string, () => Promise<{ default: React.ComponentType }>> =
   scenarios: () => import("@/components/payroll/scenarios-section"),
   glossary: () => import("@/components/payroll/glossary-section"),
   forms: () => import("@/components/payroll/forms-tab"),
+  interview: () => import("@/components/payroll/interview-mode"),
 };
 
 function LazyTab({ tabId }: { tabId: string }) {
@@ -66,7 +68,7 @@ export default function HomePage() {
               <div className="p-2.5 bg-white/15 rounded-xl backdrop-blur-sm">
                 <GraduationCap className="h-8 w-8" />
               </div>
-              <Badge variant="secondary" className="bg-white/20 text-white border-0 text-xs">2024 Tax Year</Badge>
+              <Badge variant="secondary" className="bg-white/20 text-white border-0 text-xs">2026 Tax Year</Badge>
             </div>
             <h1 className="text-3xl sm:text-5xl font-bold tracking-tight mb-3">
               Master USA Payroll
@@ -90,6 +92,7 @@ export default function HomePage() {
                 { val: "7", label: "Federal Tax Brackets" },
                 { val: "28", label: "States Covered" },
                 { val: "6", label: "Real-World Scenarios" },
+                { val: "60+", label: "Interview Questions" },
               ].map((s) => (
                 <div key={s.label} className="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
                   <div className="text-2xl sm:text-3xl font-bold">{s.val}</div>
@@ -126,7 +129,7 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <GraduationCap className="h-4 w-4" />
-              <span>USA Payroll Learning Guide — 2024 Tax Year</span>
+              <span>USA Payroll Learning Guide — 2026 Tax Year</span>
             </div>
             <div className="text-xs text-muted-foreground text-center">
               For educational purposes only. Tax laws change frequently. Consult a tax professional for personal advice.

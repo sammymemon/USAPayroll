@@ -218,7 +218,7 @@ export default function TaxationSection() {
 
           {/* LTCG Rate Table */}
           <div>
-            <h4 className="text-sm font-semibold mb-3">2024 Long-Term Capital Gains Rates</h4>
+            <h4 className="text-sm font-semibold mb-3">2026 Long-Term Capital Gains Rates</h4>
             <div className="rounded-lg border overflow-x-auto">
               <Table>
                 <TableHeader>
@@ -233,16 +233,16 @@ export default function TaxationSection() {
                 <TableBody>
                   <TableRow>
                     <TableCell className="font-medium">Single</TableCell>
-                    <TableCell className="text-right font-mono text-xs">Up to $47,025</TableCell>
-                    <TableCell className="text-right font-mono text-xs">$47,026 – $518,900</TableCell>
-                    <TableCell className="text-right font-mono text-xs">Over $518,900</TableCell>
+                    <TableCell className="text-right font-mono text-xs">Up to $48,350</TableCell>
+                    <TableCell className="text-right font-mono text-xs">$48,351 – $533,400</TableCell>
+                    <TableCell className="text-right font-mono text-xs">Over $533,400</TableCell>
                     <TableCell className="text-right font-mono text-xs">Over $200,000</TableCell>
                   </TableRow>
                   <TableRow>
                     <TableCell className="font-medium">Married Filing Jointly</TableCell>
-                    <TableCell className="text-right font-mono text-xs">Up to $94,050</TableCell>
-                    <TableCell className="text-right font-mono text-xs">$94,051 – $583,750</TableCell>
-                    <TableCell className="text-right font-mono text-xs">Over $583,750</TableCell>
+                    <TableCell className="text-right font-mono text-xs">Up to $96,700</TableCell>
+                    <TableCell className="text-right font-mono text-xs">$96,701 – $600,050</TableCell>
+                    <TableCell className="text-right font-mono text-xs">Over $600,050</TableCell>
                     <TableCell className="text-right font-mono text-xs">Over $250,000</TableCell>
                   </TableRow>
                 </TableBody>
@@ -420,7 +420,7 @@ export default function TaxationSection() {
             <CreditCard
               icon={Heart}
               title="Earned Income Tax Credit (EITC)"
-              amount="Up to $7,430 (2024, 3+ children)"
+              amount="Up to $7,890 (2026, 3+ children)"
               refundable="Fully refundable"
               incomeLimit="Up to $63,398 (married, 3+ children)"
               description="For low-to-moderate income working individuals and families. One of the most impactful anti-poverty programs in the US. ~25% of eligible taxpayers don't claim it!"
@@ -441,7 +441,7 @@ export default function TaxationSection() {
               amount="Up to $7,500"
               refundable="Non-refundable (but can carry forward)"
               incomeLimit="New: $150K single / $300K married. Used: $75K/$150K"
-              description="For new EVs assembled in North America meeting battery/critical mineral requirements. Starting 2024, the credit is applied at the dealership (point-of-sale)."
+              description="For new EVs assembled in North America meeting battery/critical mineral requirements. The credit is applied at the dealership (point-of-sale)."
               example="Buy a Tesla Model Y for $45,000 → $7,500 discount at dealer → effective price $37,500. Used EV: up to $4,000."
             />
             <CreditCard
@@ -472,7 +472,7 @@ export default function TaxationSection() {
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="bg-amber-50 dark:bg-amber-950/30 rounded p-3">
-              <div className="text-xs font-semibold mb-1">AMT Exemption (2024)</div>
+              <div className="text-xs font-semibold mb-1">AMT Exemption (2026)</div>
               <div className="text-xs">Single: <strong>$81,300</strong></div>
               <div className="text-xs">Married: <strong>$126,500</strong></div>
               <div className="text-xs mt-1 text-amber-700">Phase-out begins at $609,350 (single) / $1,218,700 (married)</div>
@@ -534,14 +534,14 @@ export default function TaxationSection() {
           <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
             <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-red-600" />
-              Key Tax Deadlines (2025 filing for 2024 tax year)
+              Key Tax Deadlines (2027 filing for 2026 tax year)
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-              <DeadlineItem date="Jan 15" desc="Q4 2024 estimated tax payment" />
+              <DeadlineItem date="Jan 15" desc="Q4 2026 estimated tax payment" />
               <DeadlineItem date="Jan 31" desc="W-2, 1099s must be sent to you" />
               <DeadlineItem date="Apr 15" desc="Individual tax returns due" highlight />
-              <DeadlineItem date="Apr 15" desc="Q1 2025 estimated tax payment" />
-              <DeadlineItem date="Jun 16" desc="Q2 2025 estimated tax payment" />
+              <DeadlineItem date="Apr 15" desc="Q1 2027 estimated tax payment" />
+              <DeadlineItem date="Jun 16" desc="Q2 2027 estimated tax payment" />
               <DeadlineItem date="Oct 15" desc="Extended returns due" />
             </div>
           </div>
