@@ -6,6 +6,7 @@ import { Bot, Send, User, BookOpen, ChevronRight, Mic, MicOff, Radio, Plus, Tras
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { createClient } from "@/utils/supabase/client";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -42,6 +43,8 @@ export default function AITutorMode() {
   const recognitionRef = useRef<any>(null);
   const isLiveModeRef = useRef(isLiveMode);
   const silenceTimerRef = useRef<any>(null);
+  const supabase = createClient();
+  const [user, setUser] = useState<any>(null);
 
   // Load custom categories and API key from local storage on mount
   useEffect(() => {
@@ -66,27 +69,59 @@ export default function AITutorMode() {
   // Initialize client and load sessions and categories
   useEffect(() => {
     setIsClient(true);
-    const savedSessions = localStorage.getItem("ai_tutor_sessions");
-    if (savedSessions) {
-      try {
-        setSessions(JSON.parse(savedSessions));
-      } catch (e) {}
-    }
     
+    // Fetch custom categories
     const savedCategories = localStorage.getItem("ai_tutor_custom_categories");
     if (savedCategories) {
       try {
         setCustomCategories(JSON.parse(savedCategories));
       } catch (e) {}
     }
+
+    // Load initial sessions
+    const fetchUserAndSessions = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      const currentUser = session?.user;
+      setUser(currentUser);
+
+      if (currentUser) {
+        // Fetch from Supabase DB
+        const { data, error } = await supabase
+          .from('ai_tutor_sessions')
+          .select('*')
+          .eq('user_id', currentUser.id)
+          .order('updated_at', { ascending: false });
+          
+        if (data && !error) {
+          const dbSessions: ChatSession[] = data.map(row => ({
+            id: row.id,
+            title: row.title,
+            category: row.category,
+            messages: row.messages,
+            updatedAt: Number(row.updated_at)
+          }));
+          setSessions(dbSessions);
+        }
+      } else {
+        // Fallback to local storage if not logged in
+        const savedSessions = localStorage.getItem("ai_tutor_sessions");
+        if (savedSessions) {
+          try {
+            setSessions(JSON.parse(savedSessions));
+          } catch (e) {}
+        }
+      }
+    };
+    
+    fetchUserAndSessions();
   }, []);
 
-  // Save sessions to localStorage whenever they change
+  // Save sessions to localStorage whenever they change (only if not logged in)
   useEffect(() => {
-    if (isClient) {
+    if (isClient && !user) {
       localStorage.setItem("ai_tutor_sessions", JSON.stringify(sessions));
     }
-  }, [sessions, isClient]);
+  }, [sessions, isClient, user]);
 
   // Scroll to bottom of chat when messages change
   useEffect(() => {
@@ -230,12 +265,16 @@ export default function AITutorMode() {
     }
   };
 
-  const handleDeleteSession = (e: React.MouseEvent, id: string) => {
+  const handleDeleteSession = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     const newSessions = sessions.filter(s => s.id !== id);
     setSessions(newSessions);
     if (activeSessionId === id) {
       handleNewChat();
+    }
+    
+    if (user) {
+      await supabase.from('ai_tutor_sessions').delete().eq('id', id).eq('user_id', user.id);
     }
   };
 
@@ -258,33 +297,48 @@ export default function AITutorMode() {
     let currentSessions = [...sessions];
 
     // If starting a new session
+    let updatedSessions = [...currentSessions];
+    let sessionToSave: ChatSession | null = null;
+    
     if (!currentSessionId) {
       currentSessionId = Date.now().toString();
       const newTitle = userMessage.split(" ").slice(0, 4).join(" ") + "...";
-      const newSession: ChatSession = {
+      sessionToSave = {
         id: currentSessionId,
         title: newTitle,
         category: selectedCategory,
         messages: [{ role: "user", content: userMessage }],
         updatedAt: Date.now()
       };
-      currentSessions = [newSession, ...currentSessions];
+      updatedSessions = [sessionToSave, ...updatedSessions];
       setActiveSessionId(currentSessionId);
-      setSessions(currentSessions);
+      setSessions(updatedSessions);
     } else {
       // Append to existing session
-      currentSessions = currentSessions.map(s => {
+      updatedSessions = updatedSessions.map(s => {
         if (s.id === currentSessionId) {
-          return {
+          sessionToSave = {
              ...s, 
              messages: [...s.messages, { role: "user", content: userMessage }],
              updatedAt: Date.now()
           };
+          return sessionToSave;
         }
         return s;
       });
-      currentSessions.sort((a,b) => b.updatedAt - a.updatedAt);
-      setSessions(currentSessions);
+      updatedSessions.sort((a,b) => b.updatedAt - a.updatedAt);
+      setSessions(updatedSessions);
+    }
+
+    if (user && sessionToSave) {
+      supabase.from('ai_tutor_sessions').upsert({
+        id: sessionToSave.id,
+        user_id: user.id,
+        title: sessionToSave.title,
+        category: sessionToSave.category,
+        messages: sessionToSave.messages,
+        updated_at: sessionToSave.updatedAt
+      }).then();
     }
 
     // Optimistically update local messages array for the UI
@@ -385,19 +439,33 @@ export default function AITutorMode() {
       const finalReply = categoryDetected ? fullText.replace(/\[Category:.*?\]\n*/i, '') : fullText;
       
       // Persist to session
+      let finalSessionToSave: ChatSession | null = null;
       setSessions(prevSessions => {
-        return prevSessions.map(s => {
+        const sorted = prevSessions.map(s => {
           if (s.id === currentSessionId) {
-             return {
+             finalSessionToSave = {
                 ...s,
                 category: finalCat,
                 messages: [...s.messages, { role: "assistant" as const, content: finalReply }],
                 updatedAt: Date.now()
              };
+             return finalSessionToSave;
           }
           return s;
         }).sort((a,b) => b.updatedAt - a.updatedAt);
+        return sorted;
       });
+
+      if (user && finalSessionToSave) {
+        supabase.from('ai_tutor_sessions').upsert({
+          id: finalSessionToSave.id,
+          user_id: user.id,
+          title: finalSessionToSave.title,
+          category: finalSessionToSave.category,
+          messages: finalSessionToSave.messages,
+          updated_at: finalSessionToSave.updatedAt
+        }).then();
+      }
 
       if (usedVoice && 'speechSynthesis' in window) {
         const utterance = new SpeechSynthesisUtterance(finalReply);
