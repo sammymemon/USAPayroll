@@ -575,23 +575,23 @@ export default function AITutorMode() {
         
         {/* Header */}
         <div className="flex-shrink-0 flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4 pb-4 border-b border-gray-200/50">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
             <button 
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="flex p-2 text-gray-500 hover:bg-white/80 hover:text-indigo-600 hover:shadow-sm rounded-xl transition-all border border-transparent hover:border-white"
+              className="flex p-1.5 sm:p-2 text-gray-500 hover:bg-white/80 hover:text-indigo-600 hover:shadow-sm rounded-xl transition-all border border-transparent hover:border-white"
               title="Toggle Sidebar"
             >
-              <PanelLeft size={22} />
+              <PanelLeft size={22} className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
-            <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600 flex items-center gap-3 tracking-tight">
-              <div className="p-2 bg-gradient-to-tr from-purple-500 to-indigo-500 rounded-xl shadow-lg shadow-purple-200">
-                <Bot className="text-white h-7 w-7" />
+            <h2 className="text-xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600 flex items-center gap-2 sm:gap-3 tracking-tight">
+              <div className="p-1.5 sm:p-2 bg-gradient-to-tr from-purple-500 to-indigo-500 rounded-lg sm:rounded-xl shadow-lg shadow-purple-200">
+                <Bot className="text-white h-5 w-5 sm:h-7 sm:w-7" />
               </div>
               AI Tutor Pro
             </h2>
           </div>
           
-          <div className="flex flex-wrap items-center gap-3 bg-white/80 backdrop-blur-md p-1.5 rounded-2xl border border-white/80 shadow-sm w-full sm:w-auto">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 bg-white/80 backdrop-blur-md p-1.5 rounded-2xl border border-white/80 shadow-sm w-full sm:w-auto">
             <input
               type="password"
               placeholder="API Key (NVIDIA/Groq/Gemini)"
@@ -637,10 +637,10 @@ export default function AITutorMode() {
           {messages.length === 0 ? (
             <div className="m-auto text-center max-w-md text-gray-500">
               <div className="bg-gradient-to-tr from-purple-100 to-indigo-100 text-indigo-600 w-20 h-20 rounded-3xl shadow-sm flex items-center justify-center mx-auto mb-6 transform rotate-3">
-                <Bot size={40} />
+                <Bot size={32} className="sm:w-10 sm:h-10" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-800 mb-3 tracking-tight">Ready to master payroll?</h3>
-              <p className="text-[15px] text-gray-600 leading-relaxed mb-8">
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2 sm:mb-3 tracking-tight">Ready to master payroll?</h3>
+              <p className="text-[14px] sm:text-[15px] text-gray-600 leading-relaxed mb-6 sm:mb-8">
                 I am your elite AI tutor. You are focusing on <strong className="text-indigo-600">{selectedCategory}</strong>. 
                 Ask questions or practice your knowledge. My answers are 100% verified against USA Payroll rules.
               </p>
@@ -669,15 +669,15 @@ export default function AITutorMode() {
                     key={idx}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className={`flex gap-4 max-w-[85%] ${msg.role === "user" ? "ml-auto flex-row-reverse" : ""}`}
+                    className={`flex gap-2 sm:gap-4 max-w-[95%] sm:max-w-[85%] ${msg.role === "user" ? "ml-auto flex-row-reverse" : ""}`}
                   >
-                    <div className={`flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center shadow-sm ${
+                    <div className={`flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-sm ${
                       msg.role === "user" ? "bg-gradient-to-br from-indigo-500 to-purple-600 text-white" : "bg-white text-indigo-600 border border-indigo-100"
                     }`}>
-                      {msg.role === "user" ? <User size={18} /> : <Bot size={20} />}
+                      {msg.role === "user" ? <User size={16} className="sm:w-[18px] sm:h-[18px]" /> : <Bot size={18} className="sm:w-5 sm:h-5" />}
                     </div>
                     
-                    <div className={`px-5 py-4 rounded-3xl text-[15px] leading-relaxed shadow-sm max-w-full overflow-hidden ${
+                    <div className={`px-4 py-3 sm:px-5 sm:py-4 rounded-2xl sm:rounded-3xl text-[14px] sm:text-[15px] leading-relaxed shadow-sm max-w-full overflow-hidden ${
                       msg.role === "user" 
                         ? "bg-gradient-to-br from-indigo-600 to-purple-600 text-white rounded-tr-sm whitespace-pre-wrap" 
                         : "bg-white border border-gray-100 text-gray-800 rounded-tl-sm shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] markdown-content"
@@ -714,12 +714,12 @@ export default function AITutorMode() {
                 <motion.div 
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="flex gap-4 max-w-[85%]"
+                  className="flex gap-2 sm:gap-4 max-w-[95%] sm:max-w-[85%]"
                 >
-                  <div className="flex-shrink-0 w-10 h-10 rounded-2xl bg-white text-indigo-600 border border-indigo-100 shadow-sm flex items-center justify-center">
-                    <Bot size={20} />
+                  <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-white text-indigo-600 border border-indigo-100 shadow-sm flex items-center justify-center">
+                    <Bot size={18} className="sm:w-5 sm:h-5" />
                   </div>
-                  <div className="px-6 py-5 bg-white border border-gray-100 rounded-3xl rounded-tl-sm shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] flex gap-2 items-center">
+                  <div className="px-5 py-4 sm:px-6 sm:py-5 bg-white border border-gray-100 rounded-2xl sm:rounded-3xl rounded-tl-sm shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] flex gap-2 items-center">
                     <div className="w-2.5 h-2.5 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }}></div>
                     <div className="w-2.5 h-2.5 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }}></div>
                     <div className="w-2.5 h-2.5 bg-pink-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }}></div>
@@ -742,21 +742,21 @@ export default function AITutorMode() {
               }}
               onKeyDown={handleKeyDown}
               placeholder="Ask your tutor something or speak..."
-              className="w-full bg-transparent pl-4 pr-[100px] py-4 min-h-[60px] max-h-[150px] outline-none resize-none text-[16px] text-gray-800 placeholder-gray-400"
+              className="w-full bg-transparent pl-3 sm:pl-4 pr-[85px] sm:pr-[100px] py-3 sm:py-4 min-h-[50px] sm:min-h-[60px] max-h-[150px] outline-none resize-none text-[15px] sm:text-[16px] text-gray-800 placeholder-gray-400"
               rows={1}
             />
             <div className="absolute right-2 bottom-2 flex items-center gap-2">
               <button
                 type="button"
                 onClick={toggleRecording}
-                className={`p-2 rounded-full transition-colors ${
+                className={`p-1.5 sm:p-2 rounded-full transition-colors ${
                   isRecording 
                     ? "bg-red-100 text-red-600 animate-pulse hover:bg-red-200" 
                     : "bg-gray-100 text-gray-500 hover:bg-purple-100 hover:text-purple-600"
                 }`}
                 title={isRecording ? "Stop Recording" : "Start Recording"}
               >
-                {isRecording ? <MicOff size={18} /> : <Mic size={18} />}
+                {isRecording ? <MicOff size={16} className="sm:w-[18px] sm:h-[18px]" /> : <Mic size={16} className="sm:w-[18px] sm:h-[18px]" />}
               </button>
               {isLoading ? (
                 <button
@@ -766,19 +766,19 @@ export default function AITutorMode() {
                       abortControllerRef.current.abort();
                     }
                   }}
-                  className="p-3 bg-red-100 hover:bg-red-200 text-red-600 rounded-xl transition-all shadow-md active:scale-95"
+                  className="p-2.5 sm:p-3 bg-red-100 hover:bg-red-200 text-red-600 rounded-xl transition-all shadow-md active:scale-95"
                   title="Stop Generating"
                 >
-                  <Square size={20} fill="currentColor" />
+                  <Square size={18} fill="currentColor" className="sm:w-5 sm:h-5" />
                 </button>
               ) : (
                 <button
                   id="ai-tutor-submit-btn"
                   type="submit"
                   disabled={!input.trim()}
-                  className="p-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg active:scale-95"
+                  className="p-2.5 sm:p-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg active:scale-95"
                 >
-                  <Send size={20} />
+                  <Send size={18} className="sm:w-5 sm:h-5" />
                 </button>
               )}
             </div>

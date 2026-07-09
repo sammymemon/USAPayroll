@@ -19,6 +19,7 @@ export default function InterviewMode() {
   const [aiPracticeQuestion, setAiPracticeQuestion] = useState<any>(null);
   const [userAnswer, setUserAnswer] = useState("");
   const [aiFeedback, setAiFeedback] = useState("");
+  const [showFeedback, setShowFeedback] = useState(false);
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [usedVoice, setUsedVoice] = useState(false);
