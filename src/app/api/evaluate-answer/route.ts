@@ -38,14 +38,25 @@ RULES FOR FEEDBACK:
 4. If they are wrong, start with "❌ Not quite!" and give the correct answer in simple, easy-to-understand terms. 
 5. Keep it extremely concise (1-3 sentences max). Use simple English.`;
 
-    const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+    let apiUrl = 'https://integrate.api.nvidia.com/v1/chat/completions';
+    let apiModel = 'meta/llama-3.1-70b-instruct';
+
+    if (apiKey.startsWith('gsk_')) {
+      apiUrl = 'https://api.groq.com/openai/v1/chat/completions';
+      apiModel = 'llama3-70b-8192';
+    } else if (apiKey.startsWith('AIza')) {
+      apiUrl = 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions';
+      apiModel = 'gemini-1.5-flash';
+    }
+
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'meta/llama-3.1-70b-instruct',
+        model: apiModel,
         messages: [
           {
             role: 'system',

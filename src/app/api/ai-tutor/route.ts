@@ -64,14 +64,25 @@ The SECOND LINE ONWARDS must be your conversational reply to the user. Do not us
       { role: 'user', content: message }
     ];
 
-    const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+    let apiUrl = 'https://integrate.api.nvidia.com/v1/chat/completions';
+    let apiModel = 'meta/llama-3.1-70b-instruct';
+
+    if (apiKey.startsWith('gsk_')) {
+      apiUrl = 'https://api.groq.com/openai/v1/chat/completions';
+      apiModel = 'llama3-70b-8192';
+    } else if (apiKey.startsWith('AIza')) {
+      apiUrl = 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions';
+      apiModel = 'gemini-1.5-flash';
+    }
+
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'meta/llama-3.1-70b-instruct',
+        model: apiModel,
         messages,
         temperature: 0.2,
         max_tokens: 1024,
