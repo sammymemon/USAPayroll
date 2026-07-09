@@ -109,8 +109,8 @@ export default function HomePage() {
         </div>
       </header>
 
-      <main className={`flex-1 mx-auto w-full px-4 py-8 ${activeTab === 'ai-tutor' ? 'max-w-[98%] px-2' : 'max-w-6xl'}`}>
-        <div className="mb-8 overflow-x-auto -mx-4 px-4">
+      <main className={`flex-1 mx-auto w-full ${activeTab === 'ai-tutor' ? 'max-w-[98%] px-1 py-2 sm:px-4 sm:py-8' : 'max-w-6xl px-4 py-8'}`}>
+        <div className={`overflow-x-auto -mx-4 px-4 ${activeTab === 'ai-tutor' ? 'mb-3 sm:mb-8' : 'mb-8'}`}>
           <div className="inline-flex gap-1 bg-muted/80 p-1.5 flex-wrap">
             {tabs.map((tab) => (
               <button
