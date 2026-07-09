@@ -90,11 +90,8 @@ export default function AITutorMode() {
 
   // Scroll to bottom of chat when messages change
   useEffect(() => {
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTo({
-        top: chatContainerRef.current.scrollHeight,
-        behavior: "auto"
-      });
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "auto", block: "end" });
     }
   }, [messages, isLoading]);
 
@@ -432,13 +429,8 @@ export default function AITutorMode() {
   if (!isClient) return null;
 
   return (
-    <div className="relative p-3 sm:p-6 bg-gradient-to-br from-indigo-50 via-white to-purple-50 rounded-2xl sm:rounded-3xl shadow-xl shadow-purple-100/50 border border-white/60 w-full h-[85vh] sm:h-[calc(100vh-150px)] min-h-[500px] flex overflow-hidden backdrop-blur-xl gap-4 sm:gap-6">
+    <div className="relative p-3 sm:p-6 bg-gradient-to-br from-indigo-50 via-white to-purple-50 rounded-2xl sm:rounded-3xl shadow-xl shadow-purple-100/50 border border-white/60 w-full flex flex-col md:flex-row gap-4 sm:gap-6">
       
-      {/* Decorative background blobs (positioned absolute, behind everything) */}
-      <div className="absolute top-0 left-0 w-96 h-96 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob pointer-events-none"></div>
-      <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000 pointer-events-none"></div>
-      <div className="absolute -bottom-32 left-20 w-96 h-96 bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000 pointer-events-none"></div>
-
       {/* Sidebar (Chat History) */}
       <div 
         className={`hidden md:flex flex-col bg-white/40 backdrop-blur-md border-white/80 shadow-sm relative z-10 transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden ${
@@ -547,7 +539,7 @@ export default function AITutorMode() {
         </div>
 
         {/* Messages */}
-        <div ref={chatContainerRef} className="flex-1 min-h-0 bg-white/70 backdrop-blur-md rounded-2xl border border-white/80 shadow-inner p-4 sm:p-6 overflow-y-auto mb-4 flex flex-col scrollbar-thin scrollbar-thumb-indigo-200 scrollbar-track-transparent hover:scrollbar-thumb-indigo-300 transition-colors">
+        <div ref={chatContainerRef} className="flex-1 bg-white/70 backdrop-blur-md rounded-2xl border border-white/80 shadow-inner p-4 sm:p-6 mb-4 flex flex-col pb-24">
           {messages.length === 0 ? (
             <div className="m-auto text-center max-w-md text-gray-500">
               <div className="bg-gradient-to-tr from-purple-100 to-indigo-100 text-indigo-600 w-20 h-20 rounded-3xl shadow-sm flex items-center justify-center mx-auto mb-6 transform rotate-3">
@@ -646,8 +638,8 @@ export default function AITutorMode() {
         </div>
 
         {/* Input Form */}
-        <form onSubmit={handleSendMessage} className="relative z-10 flex-shrink-0">
-          <div className="relative bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-gray-200/60 p-2">
+        <form onSubmit={handleSendMessage} className="sticky bottom-4 z-50 flex-shrink-0">
+          <div className="relative bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.15)] border border-gray-200/80 p-2 mx-auto">
             <textarea
               value={input}
               onChange={(e) => {
