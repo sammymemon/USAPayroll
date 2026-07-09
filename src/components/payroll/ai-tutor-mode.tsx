@@ -35,12 +35,27 @@ export default function AITutorMode() {
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [customCategories, setCustomCategories] = useState<string[]>([]);
+  const [apiKey, setApiKey] = useState("");
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
-  const isLiveModeRef = useRef(false);
+  const isLiveModeRef = useRef(isLiveMode);
   const silenceTimerRef = useRef<any>(null);
+
+  // Load custom categories and API key from local storage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("ai_tutor_custom_categories");
+    if (saved) {
+      try {
+        setCustomCategories(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to parse custom categories");
+      }
+    }
+    
+    setApiKey(localStorage.getItem("user_ai_api_key") || "");
+  }, []);
 
   // Extract unique categories from the knowledge base
   const categories = useMemo(() => {
@@ -490,14 +505,25 @@ export default function AITutorMode() {
             </h2>
           </div>
           
-          <div className="flex items-center gap-3 bg-white/80 backdrop-blur-md p-1.5 rounded-2xl border border-white/80 shadow-sm">
+          <div className="flex flex-wrap items-center gap-3 bg-white/80 backdrop-blur-md p-1.5 rounded-2xl border border-white/80 shadow-sm w-full sm:w-auto">
+            <input
+              type="password"
+              placeholder="API Key (NVIDIA/Groq/Gemini)"
+              className="px-3 py-2 text-sm bg-transparent border-b border-indigo-200 outline-none focus:border-indigo-500 w-full sm:w-[200px]"
+              value={apiKey}
+              onChange={(e) => {
+                setApiKey(e.target.value);
+                localStorage.setItem("user_ai_api_key", e.target.value.trim());
+              }}
+            />
+            
             <div className="bg-indigo-50 text-indigo-700 px-3 py-2 rounded-xl text-sm font-semibold flex items-center gap-2">
               <BookOpen size={16} /> Topic
             </div>
             <select 
               value={selectedCategory}
               onChange={(e) => handleCategoryChange(e.target.value)}
-              className="px-2 py-2 bg-transparent border-none text-sm font-medium text-gray-800 outline-none focus:ring-0 max-w-[200px] truncate cursor-pointer"
+              className="px-2 py-2 bg-transparent border-none text-sm font-medium text-gray-800 outline-none focus:ring-0 max-w-[150px] truncate cursor-pointer"
             >
               {categories.map((c) => (
                 <option key={c} value={c}>{c}</option>

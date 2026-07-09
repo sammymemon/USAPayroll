@@ -22,6 +22,7 @@ export default function InterviewMode() {
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [usedVoice, setUsedVoice] = useState(false);
+  const [apiKey, setApiKey] = useState("");
   const recognitionRef = useRef<any>(null);
 
   // Local storage for mastered questions
@@ -38,6 +39,7 @@ export default function InterviewMode() {
         console.error("Failed to parse mastered questions from local storage");
       }
     }
+    setApiKey(localStorage.getItem("user_ai_api_key") || "");
   }, []);
 
   const toggleMastered = (id: string) => {
@@ -239,6 +241,16 @@ export default function InterviewMode() {
         </h2>
         
         <div className="flex flex-wrap items-center gap-3">
+          <input
+            type="password"
+            placeholder="API Key (NVIDIA/Groq/Gemini)"
+            className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-700 outline-none focus:ring-2 focus:ring-blue-100 transition-shadow w-full sm:w-[200px]"
+            value={apiKey}
+            onChange={(e) => {
+              setApiKey(e.target.value);
+              localStorage.setItem("user_ai_api_key", e.target.value.trim());
+            }}
+          />
           <select 
             value={selectedDomain}
             onChange={(e) => {
