@@ -432,7 +432,7 @@ export default function AITutorMode() {
   if (!isClient) return null;
 
   return (
-    <div className="relative p-4 sm:p-6 bg-gradient-to-br from-indigo-50 via-white to-purple-50 rounded-3xl shadow-xl shadow-purple-100/50 border border-white/60 max-w-6xl mx-auto h-[calc(100vh-120px)] min-h-[600px] max-h-[900px] flex overflow-hidden backdrop-blur-xl gap-6">
+    <div className="relative p-4 sm:p-6 bg-gradient-to-br from-indigo-50 via-white to-purple-50 rounded-3xl shadow-xl shadow-purple-100/50 border border-white/60 w-full h-[calc(100vh-150px)] min-h-[700px] flex overflow-hidden backdrop-blur-xl gap-6">
       
       {/* Decorative background blobs (positioned absolute, behind everything) */}
       <div className="absolute top-0 left-0 w-96 h-96 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob pointer-events-none"></div>
