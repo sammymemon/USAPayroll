@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { AuthButton } from "@/components/auth-button";
 
 const tabs: { id: string; label: string; icon: LucideIcon }[] = [
   { id: "fundamentals", label: "Fundamentals", icon: BookOpen },
@@ -69,11 +70,14 @@ export default function HomePage() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(255,255,255,0.08),transparent_50%)]" />
         <div className="max-w-6xl mx-auto px-4 py-12 sm:py-16 relative z-10">
           <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2.5 bg-white/15 rounded-xl backdrop-blur-sm">
-                <GraduationCap className="h-8 w-8" />
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-white/15 rounded-xl backdrop-blur-sm">
+                  <GraduationCap className="h-8 w-8" />
+                </div>
+                <Badge variant="secondary" className="bg-white/20 text-white border-0 text-xs">2026 Tax Year</Badge>
               </div>
-              <Badge variant="secondary" className="bg-white/20 text-white border-0 text-xs">2026 Tax Year</Badge>
+              <AuthButton />
             </div>
             <h1 className="text-3xl sm:text-5xl font-bold tracking-tight mb-3">
               Master USA Payroll
