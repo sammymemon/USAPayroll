@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import { interviewQuestions } from "@/data/interview-questions";
-import { Bot, Send, User, BookOpen, ChevronRight, Mic, MicOff, Radio, Plus, Trash2, PanelLeft } from "lucide-react";
+import { Bot, Send, User, BookOpen, ChevronRight, Mic, MicOff, Radio, Plus, Trash2, PanelLeft, Square } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -43,6 +43,7 @@ export default function AITutorMode() {
   const recognitionRef = useRef<any>(null);
   const isLiveModeRef = useRef(isLiveMode);
   const silenceTimerRef = useRef<any>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
   const supabase = createClient();
   const [user, setUser] = useState<any>(null);
 
@@ -355,10 +356,13 @@ export default function AITutorMode() {
 
     const clientApiKey = localStorage.getItem("user_ai_api_key") || "";
 
+    abortControllerRef.current = new AbortController();
+
     try {
       const res = await fetch("/api/ai-tutor", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        signal: abortControllerRef.current.signal,
         body: JSON.stringify({
           message: userMessage,
           category: selectedCategory,
@@ -387,7 +391,17 @@ export default function AITutorMode() {
       let buffer = "";
 
       while (true) {
-        const { done, value } = await reader.read();
+        let readResult;
+        try {
+          readResult = await reader.read();
+        } catch (e: any) {
+          if (e.name === 'AbortError') {
+            break;
+          }
+          throw e;
+        }
+        
+        const { done, value } = readResult;
         if (done) break;
         
         buffer += decoder.decode(value, { stream: true });
@@ -696,7 +710,7 @@ export default function AITutorMode() {
                 ))}
               </AnimatePresence>
               
-              {isLoading && (
+              {isLoading && messages[messages.length - 1]?.role === "user" && (
                 <motion.div 
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -744,14 +758,29 @@ export default function AITutorMode() {
               >
                 {isRecording ? <MicOff size={18} /> : <Mic size={18} />}
               </button>
-              <button
-                id="ai-tutor-submit-btn"
-                type="submit"
-                disabled={!input.trim() || isLoading}
-                className="p-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg active:scale-95"
-              >
-                <Send size={20} />
-              </button>
+              {isLoading ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (abortControllerRef.current) {
+                      abortControllerRef.current.abort();
+                    }
+                  }}
+                  className="p-3 bg-red-100 hover:bg-red-200 text-red-600 rounded-xl transition-all shadow-md active:scale-95"
+                  title="Stop Generating"
+                >
+                  <Square size={20} fill="currentColor" />
+                </button>
+              ) : (
+                <button
+                  id="ai-tutor-submit-btn"
+                  type="submit"
+                  disabled={!input.trim()}
+                  className="p-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg active:scale-95"
+                >
+                  <Send size={20} />
+                </button>
+              )}
             </div>
           </div>
         </form>
