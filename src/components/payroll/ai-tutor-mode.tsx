@@ -433,8 +433,10 @@ export default function AITutorMode() {
       
       {/* Sidebar (Chat History) */}
       <div 
-        className={`hidden md:flex flex-col bg-white/40 backdrop-blur-md border-white/80 shadow-sm relative z-10 transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden ${
-          isSidebarOpen ? 'w-72 p-4 border rounded-2xl' : 'w-0 p-0 border-0 opacity-0'
+        className={`flex flex-col bg-white/60 md:bg-white/40 backdrop-blur-md md:border-white/80 shadow-sm relative z-10 transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden ${
+          isSidebarOpen 
+            ? 'max-h-[350px] md:max-h-none w-full md:w-72 p-4 border border-white/80 rounded-2xl mb-4 md:mb-0' 
+            : 'max-h-0 md:max-h-none w-full md:w-0 p-0 border-0 opacity-0'
         }`}
       >
         <button 
@@ -484,7 +486,7 @@ export default function AITutorMode() {
           <div className="flex items-center gap-4">
             <button 
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="hidden md:flex p-2 text-gray-500 hover:bg-white/80 hover:text-indigo-600 hover:shadow-sm rounded-xl transition-all border border-transparent hover:border-white"
+              className="flex p-2 text-gray-500 hover:bg-white/80 hover:text-indigo-600 hover:shadow-sm rounded-xl transition-all border border-transparent hover:border-white"
               title="Toggle Sidebar"
             >
               <PanelLeft size={22} />
