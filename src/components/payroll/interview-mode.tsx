@@ -195,19 +195,29 @@ export default function InterviewMode() {
           userAnswer: userAnswer,
         }),
       });
-      const data = await res.json();
-      if (res.ok) {
-        setAiFeedback(data.feedback);
-        if (usedVoice && 'speechSynthesis' in window) {
-          window.speechSynthesis.cancel();
-          const utterance = new SpeechSynthesisUtterance(data.feedback);
-          window.speechSynthesis.speak(utterance);
-        }
-      } else {
-        setAiFeedback(data.error || "Failed to get AI feedback.");
+
+      if (!res.ok) {
+        let errorMsg = "Failed to evaluate answer.";
+        try {
+          const errData = await res.json();
+          if (errData.error) errorMsg = errData.error;
+        } catch (e) {}
+        throw new Error(errorMsg);
       }
-    } catch (err) {
-      setAiFeedback("An error occurred. Please try again.");
+
+      const data = await res.json();
+      setAiFeedback(data.feedback);
+      setShowFeedback(true);
+      
+      if (usedVoice && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(data.feedback);
+        window.speechSynthesis.speak(utterance);
+      }
+    } catch (err: any) {
+      const errMsg = err.message || "An error occurred while evaluating your answer.";
+      setAiFeedback(`Error: ${errMsg}`);
+      setShowFeedback(true);
     } finally {
       setIsEvaluating(false);
     }

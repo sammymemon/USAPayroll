@@ -94,8 +94,8 @@ The SECOND LINE ONWARDS must be your conversational reply to the user. Do not us
       const errorText = await response.text().catch(() => "No text");
       console.error(`NVIDIA API Error (${response.status} ${response.statusText}):`, errorText);
       return NextResponse.json(
-        { error: 'Failed to communicate with NVIDIA API.' },
-        { status: 500 }
+        { error: `API Error: ${response.status} - ${errorText}` },
+        { status: response.status }
       );
     }
 
@@ -106,10 +106,10 @@ The SECOND LINE ONWARDS must be your conversational reply to the user. Do not us
         'Connection': 'keep-alive',
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in AI Tutor:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: error.message || 'Internal server error' },
       { status: 500 }
     );
   }

@@ -293,7 +293,12 @@ export default function AITutorMode() {
       });
 
       if (!res.ok || !res.body) {
-        throw new Error("Failed to get response");
+        let errorMsg = "Failed to get response";
+        try {
+          const errData = await res.json();
+          if (errData.error) errorMsg = errData.error;
+        } catch (e) {}
+        throw new Error(errorMsg);
       }
 
       setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
@@ -391,8 +396,9 @@ export default function AITutorMode() {
         };
         window.speechSynthesis.speak(utterance);
       }
-    } catch (err) {
-      setMessages((prev) => [...prev, { role: "assistant", content: "An error occurred while connecting to the AI Tutor." }]);
+    } catch (err: any) {
+      const errMsg = err.message || "An error occurred while connecting to the AI Tutor.";
+      setMessages((prev) => [...prev, { role: "assistant", content: `Error: ${errMsg}` }]);
     } finally {
       setIsLoading(false);
     }
