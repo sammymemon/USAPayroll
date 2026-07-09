@@ -185,6 +185,10 @@ export default function InterviewMode() {
     if (!userAnswer.trim()) return;
     setIsEvaluating(true);
     setAiFeedback("");
+    setShowFeedback(false);
+
+    const clientApiKey = localStorage.getItem("user_ai_api_key") || "";
+
     try {
       const res = await fetch('/api/evaluate-answer', {
         method: 'POST',
@@ -193,6 +197,7 @@ export default function InterviewMode() {
           question: aiPracticeQuestion.q,
           correctAnswer: aiPracticeQuestion.a,
           userAnswer: userAnswer,
+          clientApiKey,
         }),
       });
 

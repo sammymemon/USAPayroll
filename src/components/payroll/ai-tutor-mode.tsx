@@ -280,6 +280,8 @@ export default function AITutorMode() {
     setMessages(newMessages);
     setIsLoading(true);
 
+    const clientApiKey = localStorage.getItem("user_ai_api_key") || "";
+
     try {
       const res = await fetch("/api/ai-tutor", {
         method: "POST",
@@ -289,6 +291,7 @@ export default function AITutorMode() {
           category: selectedCategory,
           history: messages,
           isLiveMode: isLiveModeRef.current,
+          clientApiKey,
         }),
       });
 

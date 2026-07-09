@@ -3,7 +3,7 @@ import { interviewQuestions } from '@/data/interview-questions';
 
 export async function POST(req: Request) {
   try {
-    const { message, category, history, isLiveMode } = await req.json();
+    const { message, category, history, isLiveMode, clientApiKey } = await req.json();
 
     if (!message || !category) {
       return NextResponse.json(
@@ -12,12 +12,12 @@ export async function POST(req: Request) {
       );
     }
 
-    const apiKey = process.env.NVIDIA_API_KEY || process.env.AI_API_KEY;
+    const apiKey = clientApiKey || process.env.NVIDIA_API_KEY || process.env.AI_API_KEY;
     
     if (!apiKey || apiKey === 'your_nvidia_api_key_here') {
       return NextResponse.json(
-        { error: 'NVIDIA API key is not configured.' },
-        { status: 500 }
+        { error: 'AI API key is not configured. Please enter it in Settings.' },
+        { status: 401 }
       );
     }
 

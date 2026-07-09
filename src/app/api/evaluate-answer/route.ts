@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
   try {
-    const { question, correctAnswer, userAnswer } = await req.json();
+    const { question, correctAnswer, userAnswer, clientApiKey } = await req.json();
 
     if (!question || !correctAnswer || !userAnswer) {
       return NextResponse.json(
@@ -11,12 +11,12 @@ export async function POST(req: Request) {
       );
     }
 
-    const apiKey = process.env.NVIDIA_API_KEY || process.env.AI_API_KEY;
+    const apiKey = clientApiKey || process.env.NVIDIA_API_KEY || process.env.AI_API_KEY;
     
     if (!apiKey || apiKey === 'your_nvidia_api_key_here') {
       return NextResponse.json(
-        { error: 'NVIDIA API key is not configured.' },
-        { status: 500 }
+        { error: 'AI API key is not configured. Please enter it in Settings.' },
+        { status: 401 }
       );
     }
 

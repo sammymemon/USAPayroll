@@ -5,9 +5,12 @@ import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import {
   DollarSign, Receipt, FileText, Calculator, GraduationCap, BookOpen,
-  Lightbulb, TrendingUp, Shield, Users, MapPin, Scale, Brain, Bot, type LucideIcon,
+  Lightbulb, TrendingUp, Shield, Users, MapPin, Scale, Brain, Bot, Settings, type LucideIcon,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 const tabs: { id: string; label: string; icon: LucideIcon }[] = [
   { id: "fundamentals", label: "Fundamentals", icon: BookOpen },
@@ -57,12 +60,60 @@ function LazyTab({ tabId }: { tabId: string }) {
   return <Comp />;
 }
 
+function ApiSettings() {
+  const [open, setOpen] = useState(false);
+  const [apiKey, setApiKey] = useState("");
+
+  useEffect(() => {
+    setApiKey(localStorage.getItem("user_ai_api_key") || "");
+  }, [open]);
+
+  const saveKey = () => {
+    localStorage.setItem("user_ai_api_key", apiKey.trim());
+    setOpen(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <button className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full backdrop-blur-sm transition-colors text-white z-20" aria-label="Settings">
+          <Settings className="h-5 w-5" />
+        </button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md text-foreground">
+        <DialogHeader>
+          <DialogTitle>AI Settings</DialogTitle>
+        </DialogHeader>
+        <div className="py-4">
+          <label className="text-sm font-medium mb-2 block">
+            API Key (NVIDIA, Groq, or Gemini)
+          </label>
+          <Input 
+            type="password" 
+            value={apiKey} 
+            onChange={(e) => setApiKey(e.target.value)} 
+            placeholder="Enter your API key..."
+          />
+          <p className="text-xs text-muted-foreground mt-2">
+            Your key is saved locally in your browser. It is only sent directly to the AI provider.
+          </p>
+        </div>
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+          <Button onClick={saveKey}>Save Key</Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export default function HomePage() {
   const [activeTab, setActiveTab] = useState("fundamentals");
 
   return (
     <div className="min-h-screen flex flex-col">
       <header className="relative bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-800 text-white overflow-hidden">
+        <ApiSettings />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(255,255,255,0.08),transparent_50%)]" />
         <div className="max-w-6xl mx-auto px-4 py-12 sm:py-16 relative z-10">
           <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
