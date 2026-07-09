@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+
 
 // 2026 Federal Income Tax Brackets - Single
 const FEDERAL_BRACKETS_SINGLE = [
@@ -22,15 +22,15 @@ const FEDERAL_BRACKETS_MFJ = [
   { min: 751600, max: Infinity, rate: 0.37 },
 ];
 
-// 2026 Standard Deductions
+// 2026 Standard Deductions (post-OBBBA)
 const STANDARD_DEDUCTIONS: Record<string, number> = {
-  single: 15000,
-  married: 30000,
-  head_of_household: 22500,
+  single: 16100,
+  married: 32200,
+  head_of_household: 24150,
 };
 
 // 2026 Social Security Wage Base
-const SS_WAGE_BASE = 177000;
+const SS_WAGE_BASE = 184500;
 const SS_RATE = 0.062;
 const MEDICARE_RATE = 0.0145;
 const ADDITIONAL_MEDICARE_RATE = 0.009;
@@ -245,9 +245,9 @@ function getBracketBreakdown(taxableIncome: number, filingStatus: string) {
   });
 }
 
-export async function POST(request: NextRequest) {
+export function calculatePayroll(body: any) {
   try {
-    const body = await request.json();
+    
     const {
       annualSalary,
       payFrequency,
@@ -261,18 +261,12 @@ export async function POST(request: NextRequest) {
     } = body;
 
     if (!annualSalary || annualSalary <= 0) {
-      return NextResponse.json(
-        { error: "Annual salary must be positive" },
-        { status: 400 }
-      );
+      return { error: "Annual salary must be positive" };
     }
 
     const validFrequencies = ["annual", "semi_monthly", "biweekly", "monthly", "weekly"];
     if (!payFrequency || !validFrequencies.includes(payFrequency)) {
-      return NextResponse.json(
-        { error: "Invalid pay frequency" },
-        { status: 400 }
-      );
+      return { error: "Invalid pay frequency" };
     }
 
     const periodsPerYear: Record<string, number> = {
@@ -299,19 +293,22 @@ export async function POST(request: NextRequest) {
     const federalTaxAnnual = calculateFederalTax(federalTaxableIncome, filingStatus);
     const federalTaxPerPeriod = federalTaxAnnual / numPeriods;
 
-    // FICA taxes
-    const ssTaxableWages = Math.min(annualSalary, SS_WAGE_BASE);
+    // FICA taxes (Section 125 Health and HSA are exempt from FICA, but 401k is NOT exempt)
+    const section125Deductions = (preTaxHealthInsurance || 0) + (preTaxHSA || 0);
+    const ficaTaxableWages = Math.max(0, annualSalary - section125Deductions);
+    
+    const ssTaxableWages = Math.min(ficaTaxableWages, SS_WAGE_BASE);
     const socialSecurityAnnual = ssTaxableWages * SS_RATE;
     const socialSecurityPerPeriod = socialSecurityAnnual / numPeriods;
 
-    const medicareAnnual = annualSalary * MEDICARE_RATE;
+    const medicareAnnual = ficaTaxableWages * MEDICARE_RATE;
     const medicarePerPeriod = medicareAnnual / numPeriods;
 
     let additionalMedicareAnnual = 0;
     let additionalMedicarePerPeriod = 0;
-    if (annualSalary > ADDITIONAL_MEDICARE_THRESHOLD) {
+    if (ficaTaxableWages > ADDITIONAL_MEDICARE_THRESHOLD) {
       additionalMedicareAnnual =
-        (annualSalary - ADDITIONAL_MEDICARE_THRESHOLD) * ADDITIONAL_MEDICARE_RATE;
+        (ficaTaxableWages - ADDITIONAL_MEDICARE_THRESHOLD) * ADDITIONAL_MEDICARE_RATE;
       additionalMedicarePerPeriod = additionalMedicareAnnual / numPeriods;
     }
 
@@ -359,7 +356,7 @@ export async function POST(request: NextRequest) {
       annualSalary > 0 ? (totalDeductionsAnnual / annualSalary) * 100 : 0;
     const marginalFederalRate = getMarginalRate(federalTaxableIncome, filingStatus);
 
-    return NextResponse.json({
+    return {
       summary: {
         grossPayPerPeriod,
         netPayPerPeriod,
@@ -425,15 +422,15 @@ export async function POST(request: NextRequest) {
       payFrequency,
       numPeriods,
       filingStatus,
-    });
+    };
   } catch {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+    return { error: "Invalid request body" };
   }
 }
 
 // GET: Return tax reference data
-export async function GET() {
-  return NextResponse.json({
+export function getTaxReferenceData() {
+  return {
     federalBracketsSingle: FEDERAL_BRACKETS_SINGLE.map((b) => ({
       min: b.min,
       max: b.max === Infinity ? null : b.max,
@@ -459,5 +456,5 @@ export async function GET() {
       flatTax: data.flat,
       topRate: Math.max(...data.brackets.map((b) => b.rate)) * 100,
     })),
-  });
+  };
 }

@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import {
   DollarSign, Receipt, FileText, Calculator, GraduationCap, BookOpen,
-  Lightbulb, TrendingUp, Shield, Users, MapPin, Scale, Brain, type LucideIcon,
+  Lightbulb, TrendingUp, Shield, Users, MapPin, Scale, Brain, Bot, type LucideIcon,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -21,6 +21,7 @@ const tabs: { id: string; label: string; icon: LucideIcon }[] = [
   { id: "glossary", label: "Glossary", icon: BookOpen },
   { id: "forms", label: "Forms", icon: FileText },
   { id: "interview", label: "Interview Prep", icon: Brain },
+  { id: "ai-tutor", label: "AI Tutor", icon: Bot },
 ];
 
 const loaders: Record<string, () => Promise<{ default: React.ComponentType }>> = {
@@ -35,6 +36,7 @@ const loaders: Record<string, () => Promise<{ default: React.ComponentType }>> =
   glossary: () => import("@/components/payroll/glossary-section"),
   forms: () => import("@/components/payroll/forms-tab"),
   interview: () => import("@/components/payroll/interview-mode"),
+  "ai-tutor": () => import("@/components/payroll/ai-tutor-mode"),
 };
 
 function LazyTab({ tabId }: { tabId: string }) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Card,
@@ -38,6 +38,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
+import { calculatePayroll } from "@/utils/calculator";
 import { PieChart as RechartsPie, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from "recharts";
 
 interface PayrollResult {
@@ -153,37 +154,25 @@ export default function PayrollCalculator() {
     { code: "MN", name: "Minnesota", noTax: false },
   ];
 
-  const [result, setResult] = useState<PayrollResult | null>(null);
-  const [isCalculating, setIsCalculating] = useState(false);
-
-  const handleCalculate = useCallback(async () => {
-    setIsCalculating(true);
+  const result = useMemo(() => {
     try {
-      const res = await fetch("/api/payroll/calculate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          annualSalary,
-          payFrequency,
-          filingStatus,
-          stateCode,
-          preTax401k,
-          preTaxHealthInsurance: preTaxHealth,
-          preTaxHSA,
-          otherPreTax: 0,
-          postTaxDeductions,
-        }),
+      const data = calculatePayroll({
+        annualSalary,
+        payFrequency,
+        filingStatus,
+        stateCode,
+        preTax401k,
+        preTaxHealthInsurance: preTaxHealth,
+        preTaxHSA,
+        otherPreTax: 0,
+        postTaxDeductions,
       });
-      if (!res.ok) throw new Error("Calculation failed");
-      const data = await res.json();
-      setResult(data);
+      if (data.error) return null;
+      return data as unknown as PayrollResult;
     } catch {
-      setResult(null);
-    } finally {
-      setIsCalculating(false);
+      return null;
     }
   }, [annualSalary, payFrequency, filingStatus, stateCode, preTax401k, preTaxHealth, preTaxHSA, postTaxDeductions]);
-
   const pieData = result
     ? [
         { name: "Federal Income Tax", value: result.federalTax.taxPerPeriod },
@@ -351,15 +340,6 @@ export default function PayrollCalculator() {
             </div>
           </div>
 
-          <Button
-            onClick={handleCalculate}
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
-            size="lg"
-            disabled={isCalculating}
-          >
-            <Calculator className="mr-2 h-4 w-4" />
-            {isCalculating ? "Calculating..." : "Calculate My Paycheck"}
-          </Button>
         </CardContent>
       </Card>
 
