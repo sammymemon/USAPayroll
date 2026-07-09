@@ -125,8 +125,15 @@ export default function AITutorMode() {
 
   // Scroll to bottom of chat when messages change
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "auto", block: "end" });
+    // Only auto-scroll if the user is already near the bottom of the page.
+    // This prevents aggressive jumping and allows the user to scroll up while AI is typing.
+    const isNearBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 300;
+    
+    if (isNearBottom) {
+      window.scrollTo({
+        top: document.body.scrollHeight,
+        behavior: "auto"
+      });
     }
   }, [messages, isLoading]);
 
@@ -438,24 +445,22 @@ export default function AITutorMode() {
       
       const finalReply = categoryDetected ? fullText.replace(/\[Category:.*?\]\n*/i, '') : fullText;
       
-      // Persist to session
-      const currentSessionsLatest = [...sessions];
+      // Persist to session using the local variable sessionToSave to avoid React state closure stale data
       let finalSessionToSave: ChatSession | null = null;
       
-      const updatedSessions = currentSessionsLatest.map(s => {
-        if (s.id === currentSessionId) {
-           finalSessionToSave = {
-              ...s,
-              category: finalCat,
-              messages: [...s.messages, { role: "assistant" as const, content: finalReply }],
-              updatedAt: Date.now()
-           };
-           return finalSessionToSave;
-        }
-        return s;
-      }).sort((a,b) => b.updatedAt - a.updatedAt);
-      
-      setSessions(updatedSessions);
+      if (sessionToSave) {
+        finalSessionToSave = {
+          ...sessionToSave,
+          category: finalCat,
+          messages: [...sessionToSave.messages, { role: "assistant" as const, content: finalReply }],
+          updatedAt: Date.now()
+        };
+        
+        // Update local React state with the finalized session
+        setSessions(prevSessions => {
+          return prevSessions.map(s => s.id === currentSessionId ? (finalSessionToSave as ChatSession) : s).sort((a,b) => b.updatedAt - a.updatedAt);
+        });
+      }
 
       if (user && finalSessionToSave) {
         // Log to console to verify it's triggering
