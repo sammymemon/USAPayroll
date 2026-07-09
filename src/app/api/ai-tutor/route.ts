@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { interviewQuestions } from '@/data/interview-questions';
 
+export const runtime = 'edge';
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: Request) {
   try {
     const { message, category, history, isLiveMode, clientApiKey } = await req.json();
