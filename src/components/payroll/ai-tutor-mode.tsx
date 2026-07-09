@@ -439,24 +439,27 @@ export default function AITutorMode() {
       const finalReply = categoryDetected ? fullText.replace(/\[Category:.*?\]\n*/i, '') : fullText;
       
       // Persist to session
+      const currentSessionsLatest = [...sessions];
       let finalSessionToSave: ChatSession | null = null;
-      setSessions(prevSessions => {
-        const sorted = prevSessions.map(s => {
-          if (s.id === currentSessionId) {
-             finalSessionToSave = {
-                ...s,
-                category: finalCat,
-                messages: [...s.messages, { role: "assistant" as const, content: finalReply }],
-                updatedAt: Date.now()
-             };
-             return finalSessionToSave;
-          }
-          return s;
-        }).sort((a,b) => b.updatedAt - a.updatedAt);
-        return sorted;
-      });
+      
+      const updatedSessions = currentSessionsLatest.map(s => {
+        if (s.id === currentSessionId) {
+           finalSessionToSave = {
+              ...s,
+              category: finalCat,
+              messages: [...s.messages, { role: "assistant" as const, content: finalReply }],
+              updatedAt: Date.now()
+           };
+           return finalSessionToSave;
+        }
+        return s;
+      }).sort((a,b) => b.updatedAt - a.updatedAt);
+      
+      setSessions(updatedSessions);
 
       if (user && finalSessionToSave) {
+        // Log to console to verify it's triggering
+        console.log('Saving AI response to Supabase:', finalSessionToSave.id);
         supabase.from('ai_tutor_sessions').upsert({
           id: finalSessionToSave.id,
           user_id: user.id,
@@ -464,7 +467,9 @@ export default function AITutorMode() {
           category: finalSessionToSave.category,
           messages: finalSessionToSave.messages,
           updated_at: finalSessionToSave.updatedAt
-        }).then();
+        }).then(({ error }) => {
+          if (error) console.error("Error saving to supabase:", error);
+        });
       }
 
       if (usedVoice && 'speechSynthesis' in window) {
