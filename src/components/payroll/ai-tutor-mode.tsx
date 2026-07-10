@@ -43,6 +43,8 @@ export default function AITutorMode() {
   const recognitionRef = useRef<any>(null);
   const isLiveModeRef = useRef(isLiveMode);
   const silenceTimerRef = useRef<any>(null);
+  const baseInputRef = useRef<string>("");
+  const inputRef = useRef<string>(input);
   const abortControllerRef = useRef<AbortController | null>(null);
   const supabase = createClient();
   const [user, setUser] = useState<any>(null);
@@ -143,6 +145,11 @@ export default function AITutorMode() {
     }
   }, [messages, isLoading]);
 
+  // Keep inputRef up to date
+  useEffect(() => {
+    inputRef.current = input;
+  }, [input]);
+
   // Speech Recognition setup
   useEffect(() => {
     if (typeof window !== "undefined" && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
@@ -152,14 +159,12 @@ export default function AITutorMode() {
       recognitionRef.current.interimResults = true;
 
       recognitionRef.current.onresult = (event: any) => {
-        let finalTranscript = '';
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-          if (event.results[i].isFinal) {
-            finalTranscript += event.results[i][0].transcript;
-          }
+        let transcript = '';
+        for (let i = 0; i < event.results.length; ++i) {
+          transcript += event.results[i][0].transcript;
         }
-        if (finalTranscript) {
-          setInput((prev) => prev + (prev ? " " : "") + finalTranscript);
+        if (transcript) {
+          setInput(baseInputRef.current + (baseInputRef.current ? " " : "") + transcript);
           setUsedVoice(true);
 
           if (isLiveModeRef.current) {
@@ -186,6 +191,7 @@ export default function AITutorMode() {
            setTimeout(() => {
               if (isLiveModeRef.current && !window.speechSynthesis.speaking && recognitionRef.current) {
                  try {
+                    baseInputRef.current = inputRef.current;
                     recognitionRef.current.start();
                     setIsRecording(true);
                  } catch(e) {}
@@ -213,6 +219,7 @@ export default function AITutorMode() {
       setIsRecording(false);
     } else {
       try {
+        baseInputRef.current = input;
         recognitionRef.current.start();
         setIsRecording(true);
       } catch (e) {
@@ -229,6 +236,7 @@ export default function AITutorMode() {
     if (newLiveMode) {
       if (!isRecording && recognitionRef.current) {
         try {
+          baseInputRef.current = input;
           recognitionRef.current.start();
           setIsRecording(true);
         } catch (e) { console.error(e); }
@@ -526,7 +534,7 @@ export default function AITutorMode() {
   if (!isClient) return null;
 
   return (
-    <div className="relative p-3 sm:p-6 bg-gradient-to-br from-indigo-50 via-white to-purple-50 rounded-2xl sm:rounded-3xl shadow-xl shadow-purple-100/50 border border-white/60 w-full h-full flex flex-col md:flex-row gap-4 sm:gap-6">
+    <div className="relative p-3 sm:p-6 bg-gradient-to-br from-indigo-50 via-white to-purple-50 rounded-2xl sm:rounded-3xl shadow-xl shadow-purple-100/50 border border-white/60 w-full flex-1 flex flex-col md:flex-row gap-4 sm:gap-6">
       
       {/* Sidebar (Chat History) */}
       <div 
@@ -638,7 +646,7 @@ export default function AITutorMode() {
         </div>
 
         {/* Messages */}
-        <div ref={chatContainerRef} className="flex-1 overflow-y-auto bg-white/70 backdrop-blur-md rounded-2xl border border-white/80 shadow-inner p-4 sm:p-6 mb-4 flex flex-col pb-24">
+        <div ref={chatContainerRef} className="flex-1 bg-white/70 backdrop-blur-md rounded-2xl border border-white/80 shadow-inner p-4 sm:p-6 mb-4 flex flex-col pb-24">
           {messages.length === 0 ? (
             <div className="m-auto text-center max-w-md text-gray-500">
               <div className="bg-gradient-to-tr from-purple-100 to-indigo-100 text-indigo-600 w-20 h-20 rounded-3xl shadow-sm flex items-center justify-center mx-auto mb-6 transform rotate-3">
