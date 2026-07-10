@@ -40,7 +40,7 @@ const loaders: Record<string, () => Promise<{ default: React.ComponentType }>> =
   glossary: () => import("@/components/payroll/glossary-section"),
   forms: () => import("@/components/payroll/forms-tab"),
   interview: () => import("@/components/payroll/interview-mode"),
-  "ai-tutor": () => import("@/components/payroll/ai-tutor-mode"),
+  interview: () => import("@/components/payroll/interview-mode"),
 };
 
 function LazyTab({ tabId }: { tabId: string }) {
@@ -113,21 +113,35 @@ export default function HomePage() {
         </div>
       </header>
 
-      <main className={`flex-1 mx-auto w-full ${activeTab === 'ai-tutor' ? 'max-w-[98%] px-1 py-2 sm:px-4 sm:py-8' : 'max-w-6xl px-4 py-8'}`}>
-        <div className={`overflow-x-auto -mx-4 px-4 ${activeTab === 'ai-tutor' ? 'mb-3 sm:mb-8' : 'mb-8'}`}>
+      <main className="flex-1 mx-auto w-full max-w-6xl px-4 py-8">
+        <div className={`overflow-x-auto -mx-4 px-4 mb-8`}>
           <div className="inline-flex gap-1 bg-muted/80 p-1.5 flex-wrap">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 text-xs sm:text-sm px-3 py-2 rounded-md transition-colors ${
-                  activeTab === tab.id ? "bg-emerald-600 text-white" : "hover:bg-muted text-muted-foreground"
-                }`}
-              >
-                <tab.icon className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">{tab.label}</span>
-              </button>
-            ))}
+            {tabs.map((tab) => {
+              if (tab.id === "ai-tutor") {
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => window.location.href = '/ai-tutor'}
+                    className={`flex items-center gap-2 text-xs sm:text-sm px-3 py-2 rounded-md transition-colors hover:bg-emerald-600 hover:text-white text-muted-foreground`}
+                  >
+                    <tab.icon className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">{tab.label}</span>
+                  </button>
+                );
+              }
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-2 text-xs sm:text-sm px-3 py-2 rounded-md transition-colors ${
+                    activeTab === tab.id ? "bg-emerald-600 text-white" : "hover:bg-muted text-muted-foreground"
+                  }`}
+                >
+                  <tab.icon className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">{tab.label}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
         <LazyTab key={activeTab} tabId={activeTab} />

@@ -115,6 +115,11 @@ export default function AITutorMode() {
     };
     
     fetchUserAndSessions();
+    
+    // Auto-close sidebar on mobile
+    if (window.innerWidth < 768) {
+      setIsSidebarOpen(false);
+    }
   }, []);
 
   // Save sessions to localStorage whenever they change (only if not logged in)
@@ -521,7 +526,7 @@ export default function AITutorMode() {
   if (!isClient) return null;
 
   return (
-    <div className="relative p-3 sm:p-6 bg-gradient-to-br from-indigo-50 via-white to-purple-50 rounded-2xl sm:rounded-3xl shadow-xl shadow-purple-100/50 border border-white/60 w-full flex flex-col md:flex-row gap-4 sm:gap-6">
+    <div className="relative p-3 sm:p-6 bg-gradient-to-br from-indigo-50 via-white to-purple-50 rounded-2xl sm:rounded-3xl shadow-xl shadow-purple-100/50 border border-white/60 w-full h-full flex flex-col md:flex-row gap-4 sm:gap-6">
       
       {/* Sidebar (Chat History) */}
       <div 
@@ -633,7 +638,7 @@ export default function AITutorMode() {
         </div>
 
         {/* Messages */}
-        <div ref={chatContainerRef} className="flex-1 bg-white/70 backdrop-blur-md rounded-2xl border border-white/80 shadow-inner p-4 sm:p-6 mb-4 flex flex-col pb-24">
+        <div ref={chatContainerRef} className="flex-1 overflow-y-auto bg-white/70 backdrop-blur-md rounded-2xl border border-white/80 shadow-inner p-4 sm:p-6 mb-4 flex flex-col pb-24">
           {messages.length === 0 ? (
             <div className="m-auto text-center max-w-md text-gray-500">
               <div className="bg-gradient-to-tr from-purple-100 to-indigo-100 text-indigo-600 w-20 h-20 rounded-3xl shadow-sm flex items-center justify-center mx-auto mb-6 transform rotate-3">
