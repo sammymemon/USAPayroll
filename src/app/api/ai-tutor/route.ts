@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {
-    const { message, category, history, isLiveMode, clientApiKey } = await req.json();
+    const { message, category, history, isLiveMode, clientApiKey, model } = await req.json();
 
     if (!message || !category) {
       return NextResponse.json(
@@ -68,7 +68,7 @@ The SECOND LINE ONWARDS must be your conversational reply to the user. Do not us
     ];
 
     let apiUrl = 'https://integrate.api.nvidia.com/v1/chat/completions';
-    let apiModel = 'deepseek-ai/deepseek-v4-flash';
+    let apiModel = model || 'deepseek-ai/deepseek-v4-flash';
 
     if (apiKey.startsWith('gsk_')) {
       apiUrl = 'https://api.groq.com/openai/v1/chat/completions';

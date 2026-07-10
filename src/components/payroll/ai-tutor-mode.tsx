@@ -37,6 +37,7 @@ export default function AITutorMode() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [customCategories, setCustomCategories] = useState<string[]>([]);
   const [apiKey, setApiKey] = useState("");
+  const [selectedModel, setSelectedModel] = useState("deepseek-ai/deepseek-v4-flash");
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -61,6 +62,8 @@ export default function AITutorMode() {
     }
     
     setApiKey(localStorage.getItem("user_ai_api_key") || "");
+    const savedModel = localStorage.getItem("ai_tutor_model");
+    if (savedModel) setSelectedModel(savedModel);
   }, []);
 
   // Extract unique categories from the knowledge base
@@ -382,6 +385,7 @@ export default function AITutorMode() {
           history: messages,
           isLiveMode: isLiveModeRef.current,
           clientApiKey,
+          model: selectedModel,
         }),
       });
 
@@ -616,7 +620,32 @@ export default function AITutorMode() {
               }}
             />
             
-            <div className="bg-indigo-50 text-indigo-700 px-3 py-2 rounded-xl text-sm font-semibold flex items-center gap-2">
+            <select 
+              value={selectedModel}
+              onChange={(e) => {
+                setSelectedModel(e.target.value);
+                localStorage.setItem("ai_tutor_model", e.target.value);
+              }}
+              className="px-2 py-2 bg-transparent border-none text-sm font-medium text-gray-800 outline-none focus:ring-0 max-w-[130px] sm:max-w-[150px] truncate cursor-pointer border-l border-indigo-100"
+              title="Select AI Model"
+            >
+              <optgroup label="NVIDIA">
+                <option value="deepseek-ai/deepseek-v4-flash">DeepSeek V4 Flash</option>
+                <option value="deepseek-ai/deepseek-r1">DeepSeek R1</option>
+                <option value="meta/llama-3.1-70b-instruct">Llama 3.1 70B</option>
+                <option value="meta/llama-3.1-8b-instruct">Llama 3.1 8B</option>
+              </optgroup>
+              <optgroup label="Groq">
+                <option value="llama3-70b-8192">Groq: Llama 3 70B</option>
+                <option value="mixtral-8x7b-32768">Groq: Mixtral</option>
+              </optgroup>
+              <optgroup label="Gemini">
+                <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+              </optgroup>
+            </select>
+
+            <div className="bg-indigo-50 text-indigo-700 px-3 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 ml-1">
               <BookOpen size={16} /> Topic
             </div>
             <select 
