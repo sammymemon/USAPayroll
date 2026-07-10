@@ -39,6 +39,7 @@ export default function AITutorMode() {
   const [apiKey, setApiKey] = useState("");
   const [selectedModel, setSelectedModel] = useState("deepseek-ai/deepseek-v4-flash");
 
+  const ignoreVoiceRef = useRef(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
@@ -162,6 +163,8 @@ export default function AITutorMode() {
       recognitionRef.current.interimResults = true;
 
       recognitionRef.current.onresult = (event: any) => {
+        if (ignoreVoiceRef.current) return;
+        
         let transcript = '';
         for (let i = 0; i < event.results.length; ++i) {
           transcript += event.results[i][0].transcript;
@@ -194,6 +197,7 @@ export default function AITutorMode() {
            setTimeout(() => {
               if (isLiveModeRef.current && !window.speechSynthesis.speaking && recognitionRef.current) {
                  try {
+                    ignoreVoiceRef.current = false;
                     baseInputRef.current = inputRef.current;
                     recognitionRef.current.start();
                     setIsRecording(true);
@@ -222,6 +226,7 @@ export default function AITutorMode() {
       setIsRecording(false);
     } else {
       try {
+        ignoreVoiceRef.current = false;
         baseInputRef.current = input;
         recognitionRef.current.start();
         setIsRecording(true);
@@ -239,6 +244,7 @@ export default function AITutorMode() {
     if (newLiveMode) {
       if (!isRecording && recognitionRef.current) {
         try {
+          ignoreVoiceRef.current = false;
           baseInputRef.current = input;
           recognitionRef.current.start();
           setIsRecording(true);
@@ -310,12 +316,14 @@ export default function AITutorMode() {
     clearTimeout(silenceTimerRef.current);
 
     if (isLiveModeRef.current && recognitionRef.current && isRecording) {
+      ignoreVoiceRef.current = true;
       recognitionRef.current.stop();
       setIsRecording(false);
     }
 
     const userMessage = input.trim();
     setInput("");
+    baseInputRef.current = ""; // Completely clear state to prevent trailing repeats
     
     let currentSessionId = activeSessionId;
     let currentSessions = [...sessions];

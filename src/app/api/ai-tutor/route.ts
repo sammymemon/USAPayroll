@@ -28,9 +28,14 @@ export async function POST(req: Request) {
     const categoryQuestions = category === "All Topics" 
       ? interviewQuestions 
       : interviewQuestions.filter(q => q.category === category);
-    
     // Format the context concisely
-    const contextText = categoryQuestions.map(q => `Q: ${q.q}\nA: ${q.a}`).join('\n\n');
+    let contextText = categoryQuestions.map(q => `Q: ${q.q}\nA: ${q.a}`).join('\n\n');
+    
+    // For extreme speed in Live Voice Mode, or just general large topics, truncate the context length
+    const MAX_CONTEXT = isLiveMode ? 2000 : 4000;
+    if (contextText.length > MAX_CONTEXT) {
+      contextText = contextText.substring(0, MAX_CONTEXT) + "\n...[Context truncated to ensure high speed]...";
+    }
 
     const systemPrompt = `You are an expert, elite AI Tutor specializing in USA Payroll and Taxation.
 Your goal is to help the user learn and master payroll concepts.
@@ -63,7 +68,7 @@ The SECOND LINE ONWARDS must be your conversational reply to the user. Do not us
     // Prepare messages for DeepSeek
     const messages = [
       { role: 'system', content: systemPrompt },
-      ...(history || []),
+      ...(history ? history.slice(-6) : []), // Only send last 6 messages to reduce context and speed up TTFT
       { role: 'user', content: message }
     ];
 
@@ -88,7 +93,7 @@ The SECOND LINE ONWARDS must be your conversational reply to the user. Do not us
         model: apiModel,
         messages,
         temperature: 0.2,
-        max_tokens: 1024,
+        max_tokens: isLiveMode ? 150 : 1024,
         stream: true,
       }),
     });
@@ -112,7 +117,7 @@ The SECOND LINE ONWARDS must be your conversational reply to the user. Do not us
             model: fallbackModel,
             messages,
             temperature: 0.2,
-            max_tokens: 1024,
+            max_tokens: isLiveMode ? 150 : 1024,
             stream: true,
           }),
         });
