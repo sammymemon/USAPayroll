@@ -165,12 +165,25 @@ export default function AITutorMode() {
       recognitionRef.current.onresult = (event: any) => {
         if (ignoreVoiceRef.current) return;
         
-        let transcript = '';
-        for (let i = 0; i < event.results.length; ++i) {
-          transcript += event.results[i][0].transcript;
+        let interimTranscript = '';
+        let finalTranscript = '';
+        
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            finalTranscript += event.results[i][0].transcript;
+          } else {
+            interimTranscript += event.results[i][0].transcript;
+          }
         }
-        if (transcript) {
-          setInput(baseInputRef.current + (baseInputRef.current ? " " : "") + transcript);
+        
+        if (finalTranscript) {
+          baseInputRef.current += (baseInputRef.current ? " " : "") + finalTranscript;
+        }
+        
+        const combined = baseInputRef.current + (interimTranscript ? (baseInputRef.current ? " " : "") + interimTranscript : "");
+        
+        if (combined.trim()) {
+          setInput(combined);
           setUsedVoice(true);
 
           if (isLiveModeRef.current) {
