@@ -78,7 +78,7 @@ The SECOND LINE ONWARDS must be your conversational reply to the user. Do not us
       apiModel = 'gemini-1.5-flash';
     }
 
-    const response = await fetch(apiUrl, {
+    let response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -92,6 +92,25 @@ The SECOND LINE ONWARDS must be your conversational reply to the user. Do not us
         stream: true,
       }),
     });
+
+    // Fallback for NVIDIA 503 Resource Exhausted
+    if (response.status === 503 && apiUrl.includes('nvidia.com')) {
+      console.warn(`NVIDIA API 503 Resource Exhausted for ${apiModel}. Retrying with fallback model...`);
+      response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: 'meta/llama-3.1-70b-instruct',
+          messages,
+          temperature: 0.2,
+          max_tokens: 1024,
+          stream: true,
+        }),
+      });
+    }
 
     if (!response.ok) {
       const errorText = await response.text().catch(() => "No text");
