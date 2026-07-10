@@ -95,21 +95,32 @@ The SECOND LINE ONWARDS must be your conversational reply to the user. Do not us
 
     // Fallback for NVIDIA 503 Resource Exhausted
     if (response.status === 503 && apiUrl.includes('nvidia.com')) {
-      console.warn(`NVIDIA API 503 Resource Exhausted for ${apiModel}. Retrying with fallback model...`);
-      response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          model: 'meta/llama-3.1-70b-instruct',
-          messages,
-          temperature: 0.2,
-          max_tokens: 1024,
-          stream: true,
-        }),
-      });
+      const fallbackModels = ['meta/llama-3.1-70b-instruct', 'meta/llama-3.1-8b-instruct'];
+      for (const fallbackModel of fallbackModels) {
+        console.warn(`NVIDIA API 503 Resource Exhausted for ${apiModel}. Retrying with fallback model ${fallbackModel}...`);
+        
+        // Add a slight delay to avoid immediate rate limit congestion
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${apiKey}`,
+          },
+          body: JSON.stringify({
+            model: fallbackModel,
+            messages,
+            temperature: 0.2,
+            max_tokens: 1024,
+            stream: true,
+          }),
+        });
+        
+        if (response.ok) {
+          break; // success, exit fallback loop
+        }
+      }
     }
 
     if (!response.ok) {
