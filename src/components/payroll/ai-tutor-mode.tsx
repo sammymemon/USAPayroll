@@ -178,7 +178,7 @@ export default function AITutorMode() {
             silenceTimerRef.current = setTimeout(() => {
               const submitBtn = document.getElementById("ai-tutor-submit-btn");
               if (submitBtn) (submitBtn as HTMLButtonElement).click();
-            }, 2000);
+            }, 1200); // Reduced from 2000ms for snappier conversational flow
           }
         }
       };
@@ -518,9 +518,23 @@ export default function AITutorMode() {
 
       if (usedVoice && 'speechSynthesis' in window) {
         const utterance = new SpeechSynthesisUtterance(finalReply);
+        
+        // Try to pick a natural-sounding English voice if available
+        const voices = window.speechSynthesis.getVoices();
+        if (voices.length > 0) {
+          let bestVoice = voices.find(v => v.name.includes('Google US English'));
+          if (!bestVoice) bestVoice = voices.find(v => v.name.includes('Zira') || v.name.includes('Samantha') || v.name.includes('Victoria'));
+          if (!bestVoice) bestVoice = voices.find(v => v.lang === 'en-US' && v.name.includes('Female'));
+          if (!bestVoice) bestVoice = voices.find(v => v.lang.startsWith('en'));
+          if (bestVoice) utterance.voice = bestVoice;
+        }
+        
+        utterance.rate = 1.05; // Slightly faster for a more conversational feel
+        
         utterance.onend = () => {
           if (isLiveModeRef.current && recognitionRef.current) {
             try {
+              ignoreVoiceRef.current = false;
               recognitionRef.current.start();
               setIsRecording(true);
             } catch (e) {}
@@ -791,8 +805,8 @@ export default function AITutorMode() {
                 setUsedVoice(false);
               }}
               onKeyDown={handleKeyDown}
-              placeholder="Ask your tutor something or speak..."
-              className="w-full bg-transparent pl-3 sm:pl-4 pr-[85px] sm:pr-[100px] py-3 sm:py-4 min-h-[50px] sm:min-h-[60px] max-h-[150px] outline-none resize-none text-[15px] sm:text-[16px] text-gray-800 placeholder-gray-400"
+              placeholder={isRecording ? "Listening to you... (Speak now)" : "Ask your tutor something or speak..."}
+              className={`w-full bg-transparent pl-3 sm:pl-4 pr-[85px] sm:pr-[100px] py-3 sm:py-4 min-h-[50px] sm:min-h-[60px] max-h-[150px] outline-none resize-none text-[15px] sm:text-[16px] text-gray-800 placeholder-gray-400 transition-all ${isRecording ? 'bg-purple-50/30' : ''}`}
               rows={1}
             />
             <div className="absolute right-2 bottom-2 flex items-center gap-2">
