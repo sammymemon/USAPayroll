@@ -68,7 +68,7 @@ The SECOND LINE ONWARDS must be your conversational reply to the user. Do not us
     ];
 
     let apiUrl = 'https://integrate.api.nvidia.com/v1/chat/completions';
-    let apiModel = 'meta/llama-3.1-70b-instruct';
+    let apiModel = 'deepseek-ai/deepseek-v4-flash';
 
     if (apiKey.startsWith('gsk_')) {
       apiUrl = 'https://api.groq.com/openai/v1/chat/completions';
