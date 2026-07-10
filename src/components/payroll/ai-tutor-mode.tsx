@@ -573,7 +573,7 @@ export default function AITutorMode() {
   if (!isClient) return null;
 
   return (
-    <div className="relative p-3 sm:p-6 bg-gradient-to-br from-indigo-50 via-white to-purple-50 rounded-2xl sm:rounded-3xl shadow-xl shadow-purple-100/50 border border-white/60 w-full flex-1 flex flex-col md:flex-row gap-4 sm:gap-6">
+    <div className="relative bg-gradient-to-br from-indigo-50 via-white to-purple-50 sm:p-6 sm:rounded-3xl shadow-xl shadow-purple-100/50 sm:border border-white/60 w-full h-full flex flex-col md:flex-row gap-0 sm:gap-6">
       
       {/* Sidebar (Chat History) */}
       <div 
@@ -623,10 +623,10 @@ export default function AITutorMode() {
       </div>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col min-w-0 relative z-10 bg-white/30 backdrop-blur-sm rounded-2xl border border-white/60 p-4 sm:p-6 shadow-sm">
+      <div className="flex-1 flex flex-col min-w-0 relative z-10 bg-white/30 backdrop-blur-sm sm:rounded-2xl sm:border border-white/60 p-2 sm:p-6 shadow-sm h-full overflow-hidden">
         
         {/* Header */}
-        <div className="flex-shrink-0 flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4 pb-4 border-b border-gray-200/50">
+        <div className="flex-shrink-0 flex flex-col sm:flex-row sm:items-center justify-between mb-3 sm:mb-6 gap-3 sm:gap-4 pb-3 sm:pb-4 border-b border-gray-200/50">
           <div className="flex items-center gap-3 sm:gap-4">
             <button 
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -710,7 +710,7 @@ export default function AITutorMode() {
         </div>
 
         {/* Messages */}
-        <div ref={chatContainerRef} className="flex-1 bg-white/70 backdrop-blur-md rounded-2xl border border-white/80 shadow-inner p-4 sm:p-6 mb-4 flex flex-col pb-24">
+        <div ref={chatContainerRef} className="flex-1 overflow-y-auto bg-white/70 backdrop-blur-md rounded-xl sm:rounded-2xl border border-white/80 shadow-inner p-3 sm:p-6 mb-2 flex flex-col scrollbar-thin scrollbar-thumb-indigo-200 scrollbar-track-transparent">
           {messages.length === 0 ? (
             <div className="m-auto text-center max-w-md text-gray-500">
               <div className="bg-gradient-to-tr from-purple-100 to-indigo-100 text-indigo-600 w-20 h-20 rounded-3xl shadow-sm flex items-center justify-center mx-auto mb-6 transform rotate-3">
@@ -739,14 +739,14 @@ export default function AITutorMode() {
               </div>
             </div>
           ) : (
-            <div className="space-y-6 pb-2">
+            <div className="space-y-6 pb-2 mx-auto w-full lg:max-w-4xl xl:max-w-5xl">
               <AnimatePresence initial={false}>
                 {messages.map((msg, idx) => (
                   <motion.div 
                     key={idx}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className={`flex gap-2 sm:gap-4 max-w-[95%] sm:max-w-[85%] ${msg.role === "user" ? "ml-auto flex-row-reverse" : ""}`}
+                    className={`flex gap-2 sm:gap-4 w-full sm:max-w-[85%] ${msg.role === "user" ? "ml-auto flex-row-reverse" : ""}`}
                   >
                     <div className={`flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-sm ${
                       msg.role === "user" ? "bg-gradient-to-br from-indigo-500 to-purple-600 text-white" : "bg-white text-indigo-600 border border-indigo-100"
@@ -754,7 +754,7 @@ export default function AITutorMode() {
                       {msg.role === "user" ? <User size={16} className="sm:w-[18px] sm:h-[18px]" /> : <Bot size={18} className="sm:w-5 sm:h-5" />}
                     </div>
                     
-                    <div className={`px-4 py-3 sm:px-5 sm:py-4 rounded-2xl sm:rounded-3xl text-[14px] sm:text-[15px] leading-relaxed shadow-sm max-w-full overflow-hidden ${
+                    <div className={`px-4 py-3 sm:px-5 sm:py-4 rounded-2xl sm:rounded-3xl text-[14px] sm:text-[15px] leading-relaxed shadow-sm w-full overflow-hidden ${
                       msg.role === "user" 
                         ? "bg-gradient-to-br from-indigo-600 to-purple-600 text-white rounded-tr-sm whitespace-pre-wrap" 
                         : "bg-white border border-gray-100 text-gray-800 rounded-tl-sm shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] markdown-content"
@@ -809,8 +809,8 @@ export default function AITutorMode() {
         </div>
 
         {/* Input Form */}
-        <form onSubmit={handleSendMessage} className="sticky bottom-4 z-50 flex-shrink-0">
-          <div className="relative bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.15)] border border-gray-200/80 p-2 mx-auto">
+        <form onSubmit={handleSendMessage} className="flex-shrink-0 mt-2 sm:mt-0 p-1 sm:p-0">
+          <div className="relative bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.15)] border border-gray-200/80 p-2 mx-auto w-full lg:max-w-4xl xl:max-w-5xl">
             <textarea
               value={input}
               onChange={(e) => {

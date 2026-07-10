@@ -11,8 +11,8 @@ const AITutorMode = dynamic(() => import("@/components/payroll/ai-tutor-mode"), 
 
 export default function AITutorPage() {
   return (
-    <div className="min-h-screen w-screen flex flex-col bg-gray-50 dark:bg-gray-900">
-      <div className="flex-shrink-0 p-2 sm:p-4 border-b bg-white dark:bg-gray-900 flex items-center shadow-sm z-50 sticky top-0">
+    <div className="h-[100dvh] w-full overflow-hidden flex flex-col bg-gray-50 dark:bg-gray-900">
+      <div className="flex-shrink-0 p-2 sm:p-4 border-b bg-white dark:bg-gray-900 flex items-center shadow-sm z-50">
         <Link 
           href="/"
           className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"
@@ -21,7 +21,7 @@ export default function AITutorPage() {
           Back to Home
         </Link>
       </div>
-      <div className="flex-1 p-2 sm:p-4 flex flex-col">
+      <div className="flex-1 p-0 sm:p-4 flex flex-col overflow-hidden">
         <AITutorMode />
       </div>
     </div>
